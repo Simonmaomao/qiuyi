@@ -1,0 +1,7 @@
+{
+  "startCommand": "uvicorn app.api.server:app --host 0.0.0.0 --port 8899",
+  "buildCommand": "pip install -r requirements.txt",
+  "env": {
+    "PYTHONPATH": "."
+  }
+}

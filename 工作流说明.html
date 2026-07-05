@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>球弈 · 工作流说明</title>
+<style>
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f2f4f8;color:#1a1a2e;padding:20px;max-width:800px;margin:0 auto}
+h1{color:#0d482e;font-size:22px;border-bottom:2px solid #d4a843;padding-bottom:8px}
+h2{color:#0d482e;font-size:16px;margin-top:20px}
+.flow{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:15px;margin:10px 0}
+.step{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.step:last-child{border:none}
+.num{width:24px;height:24px;background:#0d482e;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.arrow{color:#d4a843;font-size:16px;text-align:center;padding:2px 0}
+.tag{font-size:7px;padding:1px 6px;border-radius:3px;font-weight:600;white-space:nowrap}
+.tag.green{background:#e8f5e9;color:#0d482e}
+.tag.gold{background:#fefce8;color:#92400e}
+.tag.red{background:#fce4ec;color:#c62828}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+th{background:#0d482e;color:#fff;padding:8px;text-align:left;font-size:12px}
+td{padding:8px;border-bottom:1px solid #f3f4f6}
+tr:hover{background:#f9fafb}
+.api{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;margin:6px 0;font-size:12px}
+.api code{background:#fff;padding:2px 6px;border-radius:3px;color:#0d482e;font-weight:600}
+.footer{text-align:center;padding:20px 0;font-size:11px;color:#9ca3af}
+</style>
+</head>
+<body>
+
+<h1>⚽ 球弈 · 工作流说明</h1>
+<p style="color:#6b7280;font-size:13px">数据解码每一注 · 基于国家体彩中心世界杯赛事数据</p>
+
+<h2>📊 用户操作流程</h2>
+
+<div class="flow">
+  <div class="step"><span class="num">1</span> <strong>打开小程序</strong> <span class="tag green">默认首页</span> <span style="color:#999;font-size:11px">自动加载6场比赛数据</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">2</span> <strong>浏览比赛分析</strong> <span class="tag gold">核心功能</span> <span style="color:#999;font-size:11px">查看让球★推荐 + SPF + 比分推荐</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">3</span> <strong>选择预算生成方案</strong> <span style="color:#999;font-size:11px">100元/500元/1000元 → 稳健 + 价值方案</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">4</span> <strong>查看夺冠赔率</strong> <span style="color:#999;font-size:11px">16队赔率 + 隐含概率排行</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">5</span> <strong>人机对战赢积分</strong> <span class="tag red">互动环节</span> <span style="color:#999;font-size:11px">选方向猜对 +10分 🧧</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">6</span> <strong>商城兑换礼品</strong> <span style="color:#999;font-size:11px">iPhone/AirPods/京东卡等</span></div>
+</div>
+
+<h2>🔧 数据工作流</h2>
+
+<div class="flow">
+  <div class="step"><span class="num">①</span> <strong>体彩官网 sporttery.cn</strong> <span style="color:#999;font-size:11px">SPF赔率 + 让球赔率 + 比分赔率</span></div>
+  <div class="arrow">↓ 每10分钟自动抓取</div>
+  <div class="step"><span class="num">②</span> <strong>数据缓存 cache.json</strong> <span style="color:#999;font-size:11px">5分钟TTL自动过期</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">③</span> <strong>v3.1分析引擎</strong> <span style="color:#999;font-size:11px">Poisson模型 + EV计算 + 市场偏差</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">④</span> <strong>REST API</strong> <span style="color:#999;font-size:11px">/api/analysis → /api/plan → /api/champion</span></div>
+  <div class="arrow">↓</div>
+  <div class="step"><span class="num">⑤</span> <strong>前端渲染</strong> <span style="color:#999;font-size:11px">单页HTML · ES5兼容 · 移动优先</span></div>
+</div>
+
+<h2>🌐 API 接口</h2>
+
+| 接口 | 方法 | 说明 | 返回 |
+|:---|:---:|:---|---:|
+| /api/analysis | GET | 6场比赛完整分析 | 让球/SPF/比分/球星/实力 |
+| /api/plan | POST | 投注方案生成 | 稳健+价值方案 |
+| /api/champion | GET | 夺冠赔率排行 | 9队赔率+概率 |
+| /api/browser-update | POST | 浏览器手动更新 | 状态确认 |
+| /api/cache-status | GET | 缓存状态 | 数据新鲜度 |
+
+<h2>📦 项目结构</h2>
+
+<div class="flow" style="font-size:12px;line-height:1.8">
+<code style="background:#f3f4f6;padding:2px 6px;border-radius:3px">~/Desktop/ticai-smart/</code><br>
+├── <strong>产品说明书_v3.0.md</strong> ← 本文档<br>
+├── <strong>工作流说明.html</strong> ← 工作流说明<br>
+├── <strong>start.sh</strong> — 启动脚本<br>
+├── <strong>app/</strong><br>
+│   ├── api/server.py — FastAPI 服务 (6个接口)<br>
+│   ├── core/analyzer.py — v3.1 分析引擎<br>
+│   └── services/<br>
+│       ├── collector.py — 数据采集<br>
+│       ├── team_analysis.py — 球队/球星分析<br>
+│       └── match_data.py — 比赛数据结构<br>
+├── <strong>static/</strong><br>
+│   └── index.html — 前端单页 (30KB)<br>
+├── <strong>data/</strong><br>
+│   └── cache.json — 数据缓存 (5分钟TTL)<br>
+└── <strong>models/</strong><br>
+    └── schemas.py — Pydantic模型
+</div>
+
+<h2>🧪 测试验证</h2>
+
+<div class="api">
+✅ <strong>后端</strong>：<code>$ curl http://localhost:8899/api/analysis</code> → 返回6场比赛<br>
+✅ <strong>方案</strong>：<code>$ curl -X POST http://localhost:8899/api/plan -d '{"budget":500}'</code> → 核心3个方案<br>
+✅ <strong>前端</strong>：浏览器打开 http://localhost:8899 → 6场比赛完整展示<br>
+✅ <strong>积分</strong>：新用户默认1000分 · 对战+10分 · 商城可兑换
+</div>
+
+<div class="footer">
+球弈 v3.0 · 数据解码每一注 · 🧧 把把都赢<br>
+基于国家体彩中心世界杯赛事数据 · 2026
+</div>
+
+</body>
+</html>
