@@ -52,6 +52,12 @@ class DataCache:
         self._last_fetch = time.time()
         self._save_cache(self._data)
     
+    def save_data(self, data):
+        """外部保存数据到缓存"""
+        self._data = data
+        self._last_fetch = time.time()
+        self._save_cache(data)
+    
     def _load_cache(self):
         try:
             with open(CACHE_FILE, 'r') as f:

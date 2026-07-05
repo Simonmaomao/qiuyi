@@ -14,6 +14,7 @@ from app.services.collector import DataCollector, MATCH_FIDS
 from app.core.analyzer import AnalysisEngine
 from app.services.match_data import MATCH_RESULTS, TEAM_STATS, MARKET_PROBS, DEVIATION_ANALYSIS
 from app.services.cache import DataCache
+from app.services.review_engine import SelfLearning
 
 app = FastAPI(title="球弈", version="3.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -21,6 +22,42 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 collector = DataCollector()
 engine = AnalysisEngine()
 cache = DataCache()
+review = SelfLearning()
+
+# ===== 后台自动更新线程 =====
+def auto_refresh_worker():
+    """每10分钟刷新一次：体彩赔率 + 夺冠赔率 + 赛程"""
+    while True:
+        try:
+            # 体彩SPF/让球赔率
+            matches = collector.fetch_ticai()
+            if matches:
+                cache.save_data({'matches': matches, 'date': time.strftime('%Y-%m-%d %H:%M'), 'timestamp': time.time()})
+                print(f"[自动更新] 体彩赔率已刷新 ({len(matches)}场)")
+            
+            # 夺冠赔率
+            champ = collector.fetch_champion_odds()
+            if champ:
+                print(f"[自动更新] 夺冠赔率已刷新 ({len(champ)}队)")
+            
+            # 赛程
+            sched = collector.fetch_schedules()
+            if sched:
+                print(f"[自动更新] 赛程已刷新")
+            
+            # 每日复盘（每10分钟检查一次，实际每天只执行一次）
+            review.daily_review()
+                
+        except Exception as e:
+            print(f"[自动更新] 错误: {e}")
+        
+        time.sleep(600)  # 10分钟
+
+@app.on_event("startup")
+def startup():
+    t = threading.Thread(target=auto_refresh_worker, daemon=True)
+    t.start()
+    print("🚀 球弈 v3.0 启动完成 - 自动更新线程运行中")
 
 class PlanRequest(BaseModel):
     budget: float = 500
@@ -62,8 +99,16 @@ def cache_status():
 
 @app.get("/api/analysis")
 def get_analysis():
-    """获取所有比赛分析"""
-    matches = collector.fetch_ticai()
+    """获取所有比赛分析（优先使用缓存）"""
+    # 先尝试缓存
+    cached = cache.get_data()
+    if cached and cached.get('matches'):
+        matches = cached['matches']
+    else:
+        matches = collector.fetch_ticai()
+        if matches:
+            cache.save_data({'matches': matches, 'date': time.strftime('%Y-%m-%d %H:%M'), 'timestamp': time.time()})
+    
     if not matches:
         return {"success": False, "error": "暂无比赛数据"}
     
@@ -87,6 +132,13 @@ def get_analysis():
         results.append(analysis)
     
     results.sort(key=lambda x: -x['score'])
+    
+    # 保存预测记录用于复盘学习
+    try:
+        review.save_predictions(results)
+    except:
+        pass
+    
     return {"success": True, "data": results}
 
 @app.post("/api/plan")
@@ -196,6 +248,28 @@ def get_team_stats():
 def get_market_bias():
     """体彩vs市场偏差"""
     return {"success": True, "data": DEVIATION_ANALYSIS}
+
+@app.get("/api/review")
+def get_review():
+    """每日复盘报告"""
+    try:
+        r = review.daily_review()
+        return {"success": True, "data": r}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/review/params")
+def get_review_params():
+    """获取优化后的分析参数"""
+    return {"success": True, "data": review.get_optimized_params()}
+
+@app.post("/api/review/record")
+def record_match(data: dict):
+    """记录比赛实际结果（手动录入）"""
+    match_name = data.get('match')
+    results = data.get('results', {})
+    ok = review.record_result(match_name, results)
+    return {"success": ok}
 
 @app.get("/")
 def index():

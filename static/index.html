@@ -157,6 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
   <div class="nav-item active" data-tab="matches"><span class="ni">📊</span>比赛</div>
   <div class="nav-item" data-tab="plan"><span class="ni">📋</span>方案</div>
   <div class="nav-item" data-tab="champion"><span class="ni">🏆</span>夺冠</div>
+  <div class="nav-item" data-tab="review"><span class="ni">📈</span>复盘</div>
   <div class="nav-item" data-tab="battle"><span class="ni">⚔️</span>对战</div>
   <div class="nav-item" data-tab="shop"><span class="ni">🎁</span>商城</div>
   <div class="nav-item" onclick="toggleGlossary()" style="flex:0.5;min-width:36px"><span class="ni">📖</span>术语</div>
@@ -187,6 +188,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
   <div id="planContent"><div class="emp">👆 点击上方选择预算，自动生成最优方案</div></div>
 </div>
 <div class="pg" id="pg-champion"><div id="champList"><div class="ld"><div class="sp"></div>加载中</div></div></div>
+<div class="pg" id="pg-review"><div id="reviewList"><div class="ld"><div class="sp"></div>加载复盘</div></div></div>
 <div class="pg" id="pg-battle">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
     <div><span style="font-size:11px;font-weight:700">⚔️ 人机对战</span><span style="font-size:7px;color:#6b7280;margin-left:4px">AI预测 VS 你的选择</span></div>
@@ -279,6 +281,7 @@ document.querySelectorAll('.nav-item').forEach(function(t){
     if(t.dataset.tab==='matches')loadM();
     if(t.dataset.tab==='champion')loadC();
     if(t.dataset.tab==='plan')loadP();
+    if(t.dataset.tab==='review')loadReview();
     if(t.dataset.tab==='battle')loadB();
     if(t.dataset.tab==='shop')renderShop();
   });
@@ -479,6 +482,62 @@ t.textContent='✅ +10积分！ '+luckMsgs[Math.floor(Math.random()*luckMsgs.len
   }
 });
 // 滚动吉祥话
+// 复盘页面
+async function loadReview(){
+  var el=document.getElementById('reviewList');
+  try{
+    var r=await fetch('/api/review');var d=await r.json();
+    if(!d.success){el.innerHTML='<div class="emp">暂无复盘数据</div>';return}
+    var data=d.data;
+    var html='<div class="mc"><div style="font-size:10px;font-weight:700;color:#0d482e;margin-bottom:4px">📈 每日复盘 '+data.date+'</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">';
+    html+='<div style="background:#f0fdf4;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#0d482e">'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">预测场次</div></div>';
+    html+='<div style="background:#fefce8;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#d4a843">'+data.reviewed+'/'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">已复盘</div></div>';
+    html+='<div style="background:#fce4ec;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#c62828">'+data.pending+'</div><div style="font-size:7px;color:#6b7280">待出结果</div></div>';
+    html+='</div>';
+    
+    // 准确率
+    var acc=data.accuracy;
+    html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin-bottom:3px">🎯 各玩法准确率</div>';
+    html+='<div style="font-size:7px;color:#6b7280;margin-bottom:4px">*累计数据，将持续更新</div>';
+    var items=[{k:'rq_win',l:'让球推荐'},{k:'spf_win',l:'SPF推荐'}];
+    for(var ii=0;ii<items.length;ii++){
+      var it=items[ii];var a=acc[it.k];
+      var rate=a.total>0?a.rate+'%':'暂无数据';
+      var barW=a.total>0?Math.min(100,Math.max(2,a.rate)):0;
+      var barC=a.rate>60?'#0d482e':a.rate>40?'#d4a843':'#c62828';
+      html+='<div style="display:flex;justify-content:space-between;font-size:8px;padding:3px 0"><span>'+it.l+'</span><span style="font-weight:600;color:'+barC+'">'+rate+' ('+a.correct+'/'+a.total+')</span></div>';
+      if(barW>0)html+='<div style="height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:'+barC+';border-radius:2px"></div></div>';
+    }
+    
+    // 策略参数
+    var w=data.strategy_weights;
+    html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">⚙️ 动态策略参数</div>';
+    html+='<div style="font-size:7px;color:#6b7280;line-height:1.8">';
+    html+='EV门槛: <b style="color:#0d482e">'+w.ev_threshold+'</b> | ';
+    html+='胜率门槛: <b style="color:#0d482e">'+w.win_rate_threshold+'%</b><br>';
+    html+='让球权重: <b style="color:#0d482e">'+w.rq_weight+'</b> | ';
+    html+='SPF权重: <b style="color:#0d482e">'+w.spf_weight+'</b> | ';
+    html+='比分权重: <b style="color:#0d482e">'+w.score_weight+'</b>';
+    html+='</div>';
+    
+    // 优化建议
+    if(data.suggestions&&data.suggestions.length>0){
+      html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">💡 优化建议</div>';
+      for(var si=0;si<data.suggestions.length;si++){
+        html+='<div style="font-size:7px;padding:3px 6px;background:#fefce8;border-radius:4px;margin-bottom:2px;color:#92400e">'+data.suggestions[si]+'</div>';
+      }
+    }
+    
+    // 学习次数
+    if(data.params){
+      html+='<div style="font-size:7px;color:#9ca3af;margin-top:6px;text-align:center">已自我优化 '+data.params.learn_count+' 次</div>';
+    }
+    
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div class="emp">复盘数据加载中</div>'}
+}
 var footerLucks=['🧧 把把都赢','🍀 好运连连','💯 一顺百顺','💰 百倍好运','🎯 十拿九稳','🌟 顺风顺水','🔥 鸿运当头','🏆 旗开得胜','🎉 中中中','✨ 财运亨通'];
 var headerLucks=['🧧 把把都赢 · 顺风顺水 · 好运连连','🍀 好运自来 · 十拿九稳 · 财源广进','💯 一顺百顺 · 鸿运当头 · 万事如意','💰 百倍好运 · 旗开得胜 · 恭喜发财','🎯 红单连连 · 势如破竹 · 马到成功'];
 setInterval(function(){
