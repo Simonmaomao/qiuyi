@@ -9,298 +9,199 @@ class AnalysisEngine:
     """核心分析引擎: 价值检测 + 胜率计算 + 串关优化 + 多源数据"""
     
     def __init__(self):
-        self.knockout_coef = 0.88
-        self.total_goals_base = 2.6
+        self.knockout_coef = 0.82  # ⚡调低: 淘汰赛防守优先, 进球减少
+        self.total_goals_base = 2.5  # ⚡调低: 实际进球低于预期
         self.team_stats = TEAM_STATS
         self.market_probs = MARKET_PROBS
         self.deviation = DEVIATION_ANALYSIS
+        self.ev_threshold = 0.82  # ⚡调低: 更多选项通过筛选
+        self.win_rate_threshold = 35  # ⚡调低: 降低胜率门槛
+        self.score_ev_threshold = 0.65  # ⚡调低: 比分推荐更积极
     
     def poisson(self, lmbda: float, k: int) -> float:
-        """泊松分布概率"""
         return math.exp(-lmbda) * (lmbda ** k) / math.factorial(k)
     
     def calc_true_prob(self, market_odds: List[float]) -> List[float]:
-        """从市场赔率计算真实概率"""
         inv = [1/o for o in market_odds]
         total = sum(inv)
         return [i/total for i in inv]
     
-    def calc_ev(self, sp: float, true_prob: float) -> float:
-        """计算期望值"""
-        return sp * true_prob
-    
-    def calc_value_rate(self, sp: float, true_prob: float) -> float:
-        """计算价值率"""
-        fair = 1 / true_prob
-        return (sp - fair) / fair * 100
-    
-    def analyze_match(self, match: Dict, market_odds: List[float]) -> Dict:
-        """多源分析: 体彩SP + Bet365 + 球队数据 + 赛果"""
-        spf_sp = match['spf_sp']
-        rq_sp = match['rq_sp']
-        handicap = match['handicap']
-        
-        # 使用Bet365真实概率(优先)或从市场赔率计算
-        key = f"{match['home']}vs{match['away']}"
-        if key in self.market_probs:
-            mp = self.market_probs[key]
-            probs = [mp['h'], mp['d'], mp['a']]
-        else:
-            probs = self.calc_true_prob(market_odds)
-        
-        ph, pd, pa = probs
-        
-        # 球队攻防数据
-        home_stats = self.team_stats.get(match['home'], {"gf": 0, "ga": 0})
-        away_stats = self.team_stats.get(match['away'], {"gf": 0, "ga": 0})
-        
-        # 偏差分析
-        dev = self.deviation.get(key, {})
-        
-    def _calc_all_options(self, sp_list, market_probs, labels, handicap=None):
-        """计算三个选项(胜/平/负)的分析结果"""
+    def _calc_all_options(self, sp_list, market_probs, labels):
+        """计算三个选项(胜/平/负)的完整分析"""
         results = []
         for i in range(3):
             sp = sp_list[i] if sp_list and i < len(sp_list) else 0
             mp = market_probs[i] if market_probs and i < len(market_probs) else 0.33
             win_rate = round(mp * 100, 1)
-            value_rate = round((1/sp - 1) * 100 if sp > 0 else 0, 1)
             ev = round(sp * win_rate / 100, 2) if sp > 0 else 0
             results.append({
                 'label': labels[i],
                 'sp': sp,
                 'win_rate': win_rate,
-                'value_rate': value_rate,
                 'ev': ev,
                 'recommended': ev > self.ev_threshold and win_rate > self.win_rate_threshold
             })
-        # 找出最佳推荐
         best = max(results, key=lambda x: x['ev'] * x['win_rate'] / 100) if any(r['ev'] > 0 for r in results) else results[0]
         for r in results:
             r['best'] = (r['label'] == best['label'])
         return results, best
 
     def analyze_match(self, match, market_odds):
-        """分析单场比赛"""
+        """分析单场比赛 - 返回全部3个选项"""
         home = match['home']
         away = match['away']
         spf_sp = match.get('spf_sp', [0, 0, 0])
         rq_sp = match.get('rq_sp', [0, 0, 0])
         handicap = match.get('handicap', 0)
+        key = f"{home}vs{away}"
         
-        # 计算市场概率
+        # 球队数据
+        home_stats = self.team_stats.get(home, {"gf": 0, "ga": 0})
+        away_stats = self.team_stats.get(away, {"gf": 0, "ga": 0})
+        dev = self.deviation.get(key, {})
+        
+        # 市场概率
         total_spf = sum(1/max(o, 0.01) for o in spf_sp if o > 0)
         spf_market = [1/max(o, 0.01)/total_spf if o > 0 else 0.33 for o in spf_sp]
-        
         total_rq = sum(1/max(o, 0.01) for o in rq_sp if o > 0)
         rq_market = [1/max(o, 0.01)/total_rq if o > 0 else 0.33 for o in rq_sp]
+        
+        # 淘汰赛修正: 提高平局概率(防守优先), 降低强队大胜概率
+        # 让球平选项被低估 (Mexico让球平教训)
+        spf_market[1] = spf_market[1] * 1.15  # 平局+15%
+        spf_market[0] = spf_market[0] * 0.92  # 主胜-8%
+        spf_market[2] = spf_market[2] * 0.92  # 客胜-8%
+        # 让球市场也做类似修正
+        rq_market[1] = rq_market[1] * 1.12  # 让球平+12%
+        # 重新归一化
+        spf_total = sum(spf_market)
+        spf_market = [p/spf_total for p in spf_market]
+        rq_total = sum(rq_market)
+        rq_market = [p/rq_total for p in rq_market]
         
         # SPF三个选项
         spf_labels = [f'{home}胜', '平局', f'{away}胜']
         spf_options, spf_best = self._calc_all_options(spf_sp, spf_market, spf_labels)
         
         # 让球三个选项
-        hc_str = f'{home}{handicap}' if handicap != 0 else '不让球'
-        rq_labels = [f'{hc_str}胜(主)', f'{hc_str}平', f'{hc_str}负(客)']
-        if handicap > 0:
-            rq_labels = [f'{away}+{handicap}负(主)', f'{away}+{handicap}平', f'{away}+{handicap}胜(客)']
-        rq_options, rq_best = self._calc_all_options(rq_sp, rq_market, rq_labels, handicap)
-        
-        # ===== 原有比分/球星/实力分析 =====
-        result = {
-            'match_id': match['id'],
-            'match_name': f"{match['home']}vs{match['away']}",
-            'team_stats': {
-                'home': {"gf": home_stats['gf'], "ga": home_stats['ga']},
-                'away': {"gf": away_stats['gf'], "ga": away_stats['ga']},
-            },
-            'market_bias': dev,
-            # 深度数据
-            'stars': {
-                'home': get_player_analysis(match['home']),
-                'away': get_player_analysis(match['away']),
-            },
-            'strength': get_team_strength_analysis(match['home'], match['away']),
-            'highlight': MATCH_HIGHLIGHTS.get(key, ''),
-            'detail_stats': {
-                'home': TEAM_DETAILED_STATS.get(match['home'], {}),
-                'away': TEAM_DETAILED_STATS.get(match['away'], {}),
-            },
-        }
-        
-        # === 让球不败方向分析 ===
-        if handicap > 0:  # 主队受让
-            rq_true = ph + pd  # 主不败
-            rq_sp_val = rq_sp[0]  # 让球胜
-            rq_dir = f"{match['home']}不败"
-            rq_label = "让球胜"
-        else:  # 主队让球
-            rq_true = pd + pa  # 客不败
-            rq_sp_val = rq_sp[2]  # 让球负
-            rq_dir = f"{match['away']}不败"
-            rq_label = "让球负"
-        
-        rq_ev = self.calc_ev(rq_sp_val, rq_true)
-        rq_val_rate = self.calc_value_rate(rq_sp_val, rq_true)
-        rq_pass = rq_ev > 0.85 and rq_true > 0.40
-        
-        result['rq'] = {
-            'direction': rq_dir,
-            'label': rq_label,
-            'sp': rq_sp_val,
-            'win_rate': round(rq_true * 100, 1),
-            'value_rate': round(rq_val_rate, 1),
-            'ev': round(rq_ev, 2),
-            'pass': rq_pass
-        }
-        
-        # === SPF客胜方向分析 ===
-        # 让球方=主队时, 客胜有SPF价值
-        if handicap < 0:
-            spf_true = pa  # 客胜
-            spf_sp_val = spf_sp[2]
-            spf_dir = f"{match['away']}胜"
+        if handicap > 0:  # 客队受让
+            rq_labels = [f'{away}+{handicap}负', f'{away}+{handicap}平', f'{away}+{handicap}胜']
+        elif handicap < 0:  # 主队让球
+            rq_labels = [f'{home}{handicap}胜', f'{home}{handicap}平', f'{home}{handicap}负']
         else:
-            spf_true = ph  # 主胜
-            spf_sp_val = spf_sp[0]
-            spf_dir = f"{match['home']}胜"
+            rq_labels = ['不让球胜', '不让球平', '不让球负']
+        rq_options, rq_best = self._calc_all_options(rq_sp, rq_market, rq_labels)
         
-        spf_ev = self.calc_ev(spf_sp_val, spf_true)
-        spf_val_rate = self.calc_value_rate(spf_sp_val, spf_true)
-        spf_pass = spf_ev > 0.80 and spf_true > 0.30
-        
-        result['spf'] = {
-            'direction': spf_dir,
-            'sp': spf_sp_val,
-            'win_rate': round(spf_true * 100, 1),
-            'value_rate': round(spf_val_rate, 1),
-            'ev': round(spf_ev, 2),
-            'pass': spf_pass
-        }
-        
-        # === 比分分析 ===
-        result['scores'] = self.analyze_scores(match, probs)
-        
-        # === 综合评分 ===
-        result['score'] = round(
-            (rq_true * 40 + rq_ev * 30 + spf_true * 15 + spf_ev * 15), 1
-        )
-        
-        return result
-    
-    def analyze_scores(self, match: Dict, probs: List[float]) -> List[Dict]:
-        """分析所有比分选项"""
+        # 比分分析 - 使用体彩SPF赔率计算概率(无市场赔率时)
+        scores = []
+        if market_odds:
+            probs = self.calc_true_prob(market_odds)
+        else:
+            # 从体彩SPF赔率反推概率
+            total = sum(1/max(o,0.01) for o in spf_sp)
+            probs = [1/max(o,0.01)/total for o in spf_sp] if total > 0 else [0.4, 0.3, 0.3]
         ph, pd, pa = probs
-        
-        # 计算每队预期进球
-        # 基于淘汰赛修正
+        # 淘汰赛防守修正: 强队进攻效率打折扣 (巴西被爆冷教训)
+        fav_adjust = 0.92 if abs(ph - pa) > 0.15 else 1.0  # 一方明显占优时调低预期
         if ph > pa:
-            strength = ph / (ph + pa)
+            strength = ph / (ph + pa) * fav_adjust
             l_total = self.total_goals_base * self.knockout_coef
             lh = l_total * strength
             la = l_total * (1 - strength)
         else:
-            strength = pa / (ph + pa)
+            strength = pa / (ph + pa) * fav_adjust
             l_total = self.total_goals_base * self.knockout_coef
             lh = l_total * (1 - strength)
             la = l_total * strength
-        
-        scores = []
         for i in range(7):
             for j in range(7):
-                if i + j > 6:
-                    continue
+                if i + j > 6: continue
                 prob = self.poisson(lh, i) * self.poisson(la, j)
-                if prob > 0.01:  # 概率>1%
-                    scores.append({
-                        'score': f"{i}-{j}",
-                        'prob': round(prob * 100, 1)
-                    })
-        
+                if prob > 0.01:
+                    scores.append({'score': f"{i}-{j}", 'prob': round(prob * 100, 1)})
         scores.sort(key=lambda x: -x['prob'])
-        return scores[:8]  # TOP8
-    
+        
+        return {
+            'match_id': match.get('id', ''),
+            'match_name': f"{home}vs{away}",
+            'handicap': handicap,
+            'team_stats': {
+                'home': {"gf": home_stats.get('gf',0), "ga": home_stats.get('ga',0)},
+                'away': {"gf": away_stats.get('gf',0), "ga": away_stats.get('ga',0)},
+            },
+            'market_bias': dev,
+            'stars': {
+                'home': get_player_analysis(home),
+                'away': get_player_analysis(away),
+            } if 'get_player_analysis' in dir() else {},
+            'strength': get_team_strength_analysis(home, away) if 'get_team_strength_analysis' in dir() else {},
+            'highlight': MATCH_HIGHLIGHTS.get(key, ''),
+            'detail_stats': {
+                'home': TEAM_DETAILED_STATS.get(home, {}),
+                'away': TEAM_DETAILED_STATS.get(away, {}),
+            },
+            'spf_options': spf_options,
+            'spf_best': spf_best,
+            'rq_options': rq_options,
+            'rq_best': rq_best,
+            'scores': scores[:8],
+            'score': round((spf_best.get('win_rate',50) * 40 + spf_best.get('ev',0.5) * 30 + rq_best.get('win_rate',50) * 20 + rq_best.get('ev',0.5) * 10) / 100, 1)
+        }
+
     def optimize_parlay(self, analyses: List[Dict], budget: float = 500,
                        min_ev: float = 0.80, max_picks: int = 4) -> List[Dict]:
-        """优化串关组合"""
-        # 收集所有通过验证的方向
         picks = []
         for a in analyses:
-            for key in ['rq', 'spf']:
-                d = a[key]
-                if d['pass']:
-                    picks.append({
-                        'name': f"{a['match_name']} {d['direction']}",
-                        'sp': d['sp'],
-                        'win_rate': d['win_rate'] / 100,
-                        'ev': d['ev'],
-                        'label': d.get('label', 'SPF'),
-                        'match': a['match_name']
-                    })
-        
+            for opt_key in ['spf_options', 'rq_options']:
+                for opt in a[opt_key]:
+                    if opt['recommended']:
+                        picks.append({
+                            'name': f"{a['match_name']} {opt['label']}",
+                            'sp': opt['sp'],
+                            'win_rate': opt['win_rate'] / 100,
+                            'ev': opt['ev'],
+                            'match': a['match_name']
+                        })
         results = []
         for r in range(2, min(max_picks + 1, len(picks) + 1)):
             for combo in itertools.combinations(picks, r):
-                sp = 1
-                prob = 1
-                names = []
+                sp = 1; prob = 1; names = []
                 for p in combo:
-                    sp *= p['sp']
-                    prob *= p['win_rate']
-                    names.append(p['name'][:12])
-                
+                    sp *= p['sp']; prob *= p['win_rate']; names.append(p['name'][:12])
                 ev = sp * prob
-                if ev < min_ev:
-                    continue
-                
+                if ev < min_ev: continue
                 results.append({
                     'picks': [p['name'] for p in combo],
                     'sp': round(sp, 2),
                     'win_rate': round(prob * 100, 1),
                     'ev': round(ev, 2),
-                    'fair_odds': round(1/prob, 1),
-                    'payout_100': round(sp * 100)
+                    'payout': round(sp * 100)
                 })
-        
         results.sort(key=lambda x: -x['ev'])
-        return results[:15]  # TOP15
-    
+        return results[:15]
+
     def generate_plan(self, analyses: List[Dict], budget: float = 500) -> Dict:
-        """生成完整投注方案"""
         parlays = self.optimize_parlay(analyses, budget)
-        
-        # 核心方案: 较高EV串关
         core = [p for p in parlays if p['ev'] > 0.82 and p['win_rate'] > 10][:3]
-        
-        # 价值方案: 中等EV串关  
         value = [p for p in parlays if 0.78 <= p['ev'] <= 0.82][:3]
-        
-        # 博冷方案: 高赔低概率
         fun = [p for p in parlays if p['ev'] > 0.75 and p['win_rate'] < 10][:3]
-        
-        # 资金分配
         if core:
-            core_stake = budget * 0.6
+            cs = budget * 0.6
             for p in core:
-                p['stake'] = round(core_stake / len(core), 0)
+                p['stake'] = round(cs / len(core), 0)
                 p['payout'] = round(p['stake'] * p['sp'])
-        
         if value:
-            val_stake = budget * 0.25
+            vs = budget * 0.25
             for p in value:
-                p['stake'] = round(val_stake / len(value), 0)
+                p['stake'] = round(vs / len(value), 0)
                 p['payout'] = round(p['stake'] * p['sp'])
-        
         if fun:
-            fun_stake = budget * 0.15
+            fs = budget * 0.15
             for p in fun:
-                p['stake'] = round(fun_stake / len(fun), 0)
+                p['stake'] = round(fs / len(fun), 0)
                 p['payout'] = round(p['stake'] * p['sp'])
-        
         return {
-            'core': core,
-            'value': value,
-            'fun': fun,
+            'core': core, 'value': value, 'fun': fun,
             'total_stake': budget,
             'max_payout': sum(p.get('payout', 0) for p in core + value + fun)
         }

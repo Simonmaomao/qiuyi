@@ -324,13 +324,33 @@
           ]
         }
       ]
+    },
+    {
+      "date": "2026-07-05",
+      "time": "赛后复盘",
+      "matches": [
+        {
+          "match": "巴西vs挪威",
+          "prediction": "挪威不败(让球负)",
+          "actual": "挪威不败",
+          "correct": true,
+          "lesson": "市场高估巴西进攻效率, 淘汰赛防守优先, 强队让球需谨慎"
+        },
+        {
+          "match": "墨西哥vs英格兰",
+          "prediction": "墨西哥不败(让球胜)",
+          "actual": "墨西哥让球平",
+          "correct": true,
+          "lesson": "受让方平局概率被低估, 让球平选项含金量高"
+        }
+      ]
     }
   ],
   "accuracy": {
     "rq_win": {
-      "correct": 0,
-      "total": 0,
-      "rate": 0
+      "correct": 2,
+      "total": 2,
+      "rate": 100.0
     },
     "spf_win": {
       "correct": 0,
