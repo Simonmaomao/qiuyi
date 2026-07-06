@@ -57,6 +57,56 @@ class AnalysisEngine:
         # 偏差分析
         dev = self.deviation.get(key, {})
         
+    def _calc_all_options(self, sp_list, market_probs, labels, handicap=None):
+        """计算三个选项(胜/平/负)的分析结果"""
+        results = []
+        for i in range(3):
+            sp = sp_list[i] if sp_list and i < len(sp_list) else 0
+            mp = market_probs[i] if market_probs and i < len(market_probs) else 0.33
+            win_rate = round(mp * 100, 1)
+            value_rate = round((1/sp - 1) * 100 if sp > 0 else 0, 1)
+            ev = round(sp * win_rate / 100, 2) if sp > 0 else 0
+            results.append({
+                'label': labels[i],
+                'sp': sp,
+                'win_rate': win_rate,
+                'value_rate': value_rate,
+                'ev': ev,
+                'recommended': ev > self.ev_threshold and win_rate > self.win_rate_threshold
+            })
+        # 找出最佳推荐
+        best = max(results, key=lambda x: x['ev'] * x['win_rate'] / 100) if any(r['ev'] > 0 for r in results) else results[0]
+        for r in results:
+            r['best'] = (r['label'] == best['label'])
+        return results, best
+
+    def analyze_match(self, match, market_odds):
+        """分析单场比赛"""
+        home = match['home']
+        away = match['away']
+        spf_sp = match.get('spf_sp', [0, 0, 0])
+        rq_sp = match.get('rq_sp', [0, 0, 0])
+        handicap = match.get('handicap', 0)
+        
+        # 计算市场概率
+        total_spf = sum(1/max(o, 0.01) for o in spf_sp if o > 0)
+        spf_market = [1/max(o, 0.01)/total_spf if o > 0 else 0.33 for o in spf_sp]
+        
+        total_rq = sum(1/max(o, 0.01) for o in rq_sp if o > 0)
+        rq_market = [1/max(o, 0.01)/total_rq if o > 0 else 0.33 for o in rq_sp]
+        
+        # SPF三个选项
+        spf_labels = [f'{home}胜', '平局', f'{away}胜']
+        spf_options, spf_best = self._calc_all_options(spf_sp, spf_market, spf_labels)
+        
+        # 让球三个选项
+        hc_str = f'{home}{handicap}' if handicap != 0 else '不让球'
+        rq_labels = [f'{hc_str}胜(主)', f'{hc_str}平', f'{hc_str}负(客)']
+        if handicap > 0:
+            rq_labels = [f'{away}+{handicap}负(主)', f'{away}+{handicap}平', f'{away}+{handicap}胜(客)']
+        rq_options, rq_best = self._calc_all_options(rq_sp, rq_market, rq_labels, handicap)
+        
+        # ===== 原有比分/球星/实力分析 =====
         result = {
             'match_id': match['id'],
             'match_name': f"{match['home']}vs{match['away']}",

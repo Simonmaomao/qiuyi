@@ -304,18 +304,15 @@ async function loadM(){
     var labs=['今晚23:00','今晚23:00','明晚22:00','明晚22:00','后天','后天'];
     for(var mi=0;mi<data.length;mi++){
       var m=data[mi];
-      var rq=m.rq;
-      var spf=m.spf;
-      var h='',a='';
       var nm=m.match_name;
       var vsIdx=nm.indexOf('vs');
-      if(vsIdx>0){h=nm.substring(0,vsIdx);a=nm.substring(vsIdx+2);}
-      var tag=rq.pass?'<span class="o-badge rec">★</span>':'';
+      var h=nm.substring(0,vsIdx);
+      var a=nm.substring(vsIdx+2);
       var li=labs[mi]||'';
       var mid=m.match_id||'';
       
       // 比分推荐
-      var spMap=SP_MAP[m.match_name]||{};
+      var spMap=SCORE_SP[m.match_name]||{};
       var tops=m.scores||[];
       var best=null;
       for(var si=0;si<tops.length&&si<10;si++){
@@ -326,14 +323,32 @@ async function loadM(){
       var scHtml='';
       if(best){
         var lbl=best.ev>1?'💰':best.ev>0.85?'✅':'⚡';
-        var ec=best.ev>1?'sc-ev ok':'sc-ev';
-        scHtml='<div class="mc-sc show"><span class="sc-l">🎯 '+lbl+'</span><span class="sc-r">'+best.score+'@'+best.sp.toFixed(2)+' <span class="'+ec+'">'+best.prob+'% EV'+best.ev.toFixed(2)+'</span></span></div>';
+        scHtml='<div class="mc-sc show"><span class="sc-l">🎯 最佳比分</span><span class="sc-r">'+best.score+'@'+best.sp.toFixed(2)+' <span class="'+(best.ev>1?'sc-ev ok':'sc-ev')+'">'+best.prob+'% EV'+best.ev.toFixed(2)+'</span></span></div>';
       }
       
-      var rqClass=rq.pass?'mc-o rec':'mc-o';
-      var rqSpClass=rq.pass?'o-sp g':'o-sp';
+      // 构建三个选项表格 - SPF
+      var spfOpts=m.spf_options&&m.spf_options[1]_options||[];
+      var spfHtml='';
+      for(var oi=0;oi<spfOpts.length;oi++){
+        var o=spfOpts[oi];
+        var cls=o.recommended?'mc-o rec':'mc-o';
+        var star=o.recommended?'<span class="o-badge rec">★</span>':'';
+        var evCls=o.ev>1?'g':'';
+        spfHtml+='<div class="'+cls+'" style="cursor:pointer" onclick="alert(\'SPF '+o.label+': SP'+o.sp+' 胜率'+o.win_rate+'% EV'+o.ev+'\')"><div class="o-top"><span class="o-badge spf">SPF</span> <span style="font-size:7px;color:#6b7280">'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+      }
       
-      html=html+'<div class="mc"><div class="mc-top"><span class="mc-round">1/8决赛 · '+mid+'</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+li+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h)+'</span><span class="nm">'+h+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm">'+a+'</span><span class="fl">'+em(a)+'</span></div></div><div class="mc-odds"><div class="'+rqClass+'"><div class="o-top"><span class="o-badge rq">让球</span> <span style="font-size:7px;color:#6b7280">'+rq.direction+'</span>'+tag+'</div><div class="'+rqSpClass+'">'+rq.sp.toFixed(2)+'</div><div class="o-meta">'+rq.win_rate+'% · EV'+rq.ev+'</div><div class="o-hint">胜或平都中</div></div><div class="mc-o"><div class="o-top"><span class="o-badge spf">SPF(胜平负)</span> <span style="font-size:7px;color:#6b7280">'+spf.direction+'</span></div><div class="o-sp">'+spf.sp.toFixed(2)+'</div><div class="o-meta">'+spf.win_rate+'% · EV'+spf.ev+'</div><div class="o-hint">必须猜中赢球队伍</div></div></div>'+scHtml+'</div>';
+      // 让球三个选项
+      var rqOpts=m.rq_options&&m.rq_options[1]_options||[];
+      var rqHtml='';
+      for(var oi=0;oi<rqOpts.length;oi++){
+        var o=rqOpts[oi];
+        var cls=o.recommended?'mc-o rec':'mc-o';
+        var star=o.recommended?'<span class="o-badge rec">★</span>':'';
+        var evCls=o.ev>1?'g':'';
+        rqHtml+='<div class="'+cls+'" style="cursor:pointer" onclick="alert(\'让球 '+o.label+': SP'+o.sp+' 胜率'+o.win_rate+'% EV'+o.ev+'\')"><div class="o-top"><span class="o-badge rq">让球</span> <span style="font-size:7px;color:#6b7280">'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+      }
+      
+      html=html+'<div class="mc"><div class="mc-top"><span class="mc-round">1/8决赛 · '+mid+'</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+li+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h)+'</span><span class="nm">'+h+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm">'+a+'</span><span class="fl">'+em(a)+'</span></div></div><div style="font-size:7px;color:#6b7280;margin-bottom:4px;font-weight:500">📋 三个选项 · 绿色★=推荐</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px">'+spfHtml+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:0">'+rqHtml+'</div>'+scHtml+'</div>';
     }
     el.innerHTML=html;
   }catch(e){el.innerHTML='<div class="emp">加载失败</div>'}
