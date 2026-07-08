@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>球弈 · 世界杯</title>
+<style>
+:root{--green:#0d482e;--green-light:#1a7a4a;--gold:#d4a843;--gold-light:#f0d68a;--bg:#f2f4f8;--card:#fff;--text:#1a1a2e;--text2:#6b7280;--border:#e5e7eb;--shadow:0 1px 3px rgba(0,0,0,0.04),0 1px 2px rgba(0,0,0,0.02)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.app{max-width:420px;margin:0 auto;min-height:100vh;background:#fff}
+
+/* 顶部 */
+.top{background:var(--green);padding:0;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.top-bg{position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);border-radius:50%;z-index:1}
+.top-pattern{position:absolute;bottom:0;left:0;right:0;height:40px;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,0.015) 8px,rgba(255,255,255,0.015) 16px);z-index:1}
+.top-inner{padding:12px 14px 4px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+.top-left{display:flex;align-items:center;gap:6px}
+.logo{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px}
+.logo span{color:var(--gold)}
+.badge-cn{font-size:7px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);padding:1px 5px;border-radius:3px;letter-spacing:0.3px;white-space:nowrap}
+.top-right{display:flex;align-items:center;gap:6px}
+.score-pill{background:rgba(255,255,255,0.08);border-radius:20px;padding:2px 8px;display:flex;align-items:center;gap:3px}
+.score-pill .num{font-size:13px;font-weight:700;color:var(--gold)}
+.score-pill .lbl{font-size:7px;color:rgba(255,255,255,0.4)}
+.avatar{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px}
+
+/* 赛事信息行 */
+.top-info{text-align:center;padding:1px 14px 3px;position:relative;z-index:2}
+.top-info .ti{font-size:9px;color:rgba(255,255,255,0.65);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;font-weight:400}
+
+/* 赛事进度条 */
+.top-progress{display:flex;align-items:center;justify-content:center;gap:0;padding:2px 14px 6px;position:relative;z-index:2}
+.tp-item{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.05);flex-shrink:0;transition:all 0.3s;border:1px solid rgba(255,255,255,0.06);line-height:1;text-align:center}
+.tp-item.done{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.1)}
+.tp-item.active{background:rgba(212,168,67,0.15);color:var(--gold);border-color:rgba(212,168,67,0.2)}
+.tp-item span{line-height:1;font-size:6px}
+.tp-conn{width:18px;height:2px;background:rgba(255,255,255,0.06);margin:0 1px;border-radius:1px}
+.tp-conn.done{background:rgba(255,255,255,0.12)}
+.tp-conn.active{background:rgba(212,168,67,0.15)}
+
+/* 导航 */
+.nav{display:flex;padding:5px 8px;gap:2px;background:#fff;border-bottom:1px solid var(--border)}
+.nav-item{flex:1;text-align:center;padding:5px 0;font-size:10px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;transition:all 0.15s;position:relative}
+.nav-item .ni{font-size:13px;display:block;margin-bottom:1px}
+.nav-item.active{color:var(--green);font-weight:600;background:rgba(13,72,46,0.04)}
+.nav-item.active::after{content:'';position:absolute;bottom:-1px;left:25%;right:25%;height:2px;background:var(--green);border-radius:2px}
+
+/* 页面 */
+.pg{display:none;padding:6px 8px 20px}
+.pg.active{display:block}
+
+/* 比赛卡 - 大字号紧凑版 */
+.mc{background:var(--card);border-radius:8px;padding:8px 10px;margin-bottom:5px;border:1px solid var(--border);position:relative}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0.08;border-radius:8px 8px 0 0}
+.mc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.mc-round{font-size:8px;color:var(--text2);font-weight:500}
+.mc-tags{display:flex;gap:4px;align-items:center}
+.tag-dg{font-size:7px;background:#e8f5e9;color:var(--green);padding:2px 6px;border-radius:3px;font-weight:600}
+.tag-time{font-size:8px;color:#dc2626;font-weight:600}
+.mc-teams{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mc-t{display:flex;align-items:center;gap:5px;flex:1}
+.mc-t-r{justify-content:flex-end}
+.mc-t .fl{font-size:18px}
+.mc-t .nm{font-size:14px;font-weight:700;color:var(--text)}
+.mc-odds{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:0}
+.mc-o{padding:6px 8px;border-radius:6px;background:#f9fafb;border:1px solid #eeeff2;position:relative}
+.mc-o.rec{background:#f0fdf4;border-color:#bbf7d0}
+.mc-o .o-top{display:flex;align-items:center;gap:3px;margin-bottom:2px}
+.o-badge{font-size:7px;font-weight:700;padding:2px 5px;border-radius:3px}
+.o-badge.rq{background:var(--green);color:#fff}
+.o-badge.spf{background:var(--gold);color:#fff}
+.o-badge.rec{background:var(--green);color:#fff;font-size:6px;padding:1px 4px;border-radius:2px;margin-left:auto}
+.mc-o .o-sp{font-size:16px;font-weight:800;color:var(--text);line-height:1.3}
+.mc-o .o-sp.g{color:var(--gold)}
+.mc-o .o-meta{font-size:9px;color:var(--text2);margin-top:2px;font-weight:500}
+.mc-o .o-hint{font-size:8px;color:#9ca3af;margin-top:2px;font-weight:400}
+.mc-sc{display:none}
+.mc-sc.show{display:block;margin-top:4px;padding:5px 8px;background:#fefce8;border-radius:6px;border:1px solid #fde68a;font-size:9px;color:#92400e;display:flex;justify-content:space-between;align-items:center}
+.mc-sc .sc-l{font-weight:600}
+.mc-sc .sc-r{font-weight:700}
+.mc-sc .sc-r .sc-ev{color:#dc2626;font-weight:700}
+.mc-sc .sc-r .sc-ev.ok{color:var(--green)}
+
+/* 方案页简易 */
+.plan-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.plan-box .pb-title{font-size:11px;font-weight:600;color:var(--green);margin-bottom:4px}
+.plan-box .pb-sub{font-size:8px;color:var(--text2);margin-bottom:8px}
+.plan-box .pb-btn{background:var(--green);color:#fff;border:none;padding:8px 0;width:100%;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer}
+.plan-result{margin-top:6px}
+.pr-item{display:flex;justify-content:space-between;padding:6px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:4px}
+.pr-item .pr-l{font-size:9px;font-weight:600}
+.pr-item .pr-l .pr-sub{font-size:7px;color:var(--text2);font-weight:400}
+.pr-item .pr-r{text-align:right}
+.pr-item .pr-r .pr-sp{font-size:13px;font-weight:800;color:var(--gold)}
+.pr-item .pr-r .pr-p{font-size:7px;color:var(--green);font-weight:600}
+
+/* 加载 */
+.ld{text-align:center;padding:30px 0;color:var(--text2);font-size:9px}
+.ld .sp{display:inline-block;width:14px;height:14px;border:2px solid #e5e7eb;border-top-color:var(--green);border-radius:50%;animation:spin 0.6s linear infinite;margin-bottom:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pick-btn{flex:1;text-align:center;padding:5px 2px;border-radius:5px;font-size:7px;font-weight:600;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280;transition:all 0.15s;line-height:1.2}.pick-btn:hover{background:#f9fafb}.pick-btn.selected{border-color:#0d482e;background:#f0fdf4;color:#0d482e;font-weight:700}.pick-btn:disabled{cursor:default;opacity:0.6}.pick-row{display:flex;gap:3px;margin-top:2px}
+.emp{text-align:center;padding:20px;color:var(--text2);font-size:10px}
+
+/* 夺冠 */
+.rk-table{width:100%;border-collapse:collapse;font-size:9px}
+.rk-table th{font-size:7px;color:var(--text2);padding:5px;text-align:left;border-bottom:1px solid var(--border);font-weight:500}
+.rk-table td{padding:6px 5px;border-bottom:1px solid #f3f4f6}
+.rk-num{color:var(--text2);width:16px}
+.rk-team{font-weight:600;display:flex;align-items:center;gap:4px}
+.rk-sp{font-weight:700;text-align:center;color:var(--green)}
+.rk-prob{text-align:right;color:var(--green);font-weight:600}
+
+/* 页脚 */
+.glossary{background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:6px 8px;margin:4px 10px;font-size:7px;color:#92400e;line-height:1.6}
+.gl-item{margin:2px 0}
+.gl-badge{font-size:6px;font-weight:700;padding:1px 4px;border-radius:3px;margin-right:3px}
+.ft{text-align:center;padding:14px;font-size:6px;color:#d1d5db;letter-spacing:0.5px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="top">
+  <div class="top-bg"></div>
+  <div class="top-pattern"></div>
+  <div class="top-inner">
+    <div class="top-left">
+      <div class="logo">球弈<span>.</span></div>
+      <span style="font-size:7px;color:rgba(255,255,255,0.35);margin:0 1px;font-weight:300">|</span>
+      <span style="font-size:7px;color:rgba(255,255,255,0.45);font-weight:300;white-space:nowrap;letter-spacing:0.3px">数据解码每一注</span>
+      <span class="badge-cn">🇺🇸🇲🇽🇨🇦 2026</span>
+    </div>
+    <div class="top-right">
+      <div class="score-pill"><span class="num" id="hScore">1000</span><span class="lbl">分</span><span style="font-size:6px;color:rgba(255,255,255,0.25);margin-left:2px">💰</span></div>
+      <div class="avatar">👤</div>
+    </div>
+  </div>
+  <div class="top-info">
+    <div class="ti">🏆 世界杯2026 <span style="color:rgba(255,255,255,0.15)">|</span> 🇺🇸 美国·墨西哥·加拿大 <span style="color:rgba(255,255,255,0.15)">|</span> ⚽ 淘汰赛 · 1/4决赛</div>
+    <div style="font-size:7px;color:rgba(255,255,255,0.25);margin-top:1px;letter-spacing:2px" id="luckMsg">🧧 把把都赢 · 顺风顺水 · 好运连连</div>
+  </div>
+  <div class="top-progress">
+    <div class="tp-item done" style="font-size:9px;letter-spacing:-2px"><span>🇺🇸🇲🇽🇨🇦</span></div>
+    <div class="tp-conn done"></div>
+    <div class="tp-item done"><span>16强</span></div>
+    <div class="tp-conn active"></div>
+    <div class="tp-item active"><span>8强</span></div>
+    <div class="tp-conn"></div>
+    <div class="tp-item"><span>4强</span></div>
+    <div class="tp-conn"></div>
+    <div class="tp-item"><span>🏆</span></div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" data-tab="matches"><span class="ni">📊</span>比赛</div>
+  <div class="nav-item" data-tab="plan"><span class="ni">📋</span>方案</div>
+  <div class="nav-item" data-tab="champion"><span class="ni">🏆</span>夺冠</div>
+  <div class="nav-item" data-tab="review"><span class="ni">📈</span>复盘</div>
+  <div class="nav-item" data-tab="battle"><span class="ni">⚔️</span>对战</div>
+  <div class="nav-item" data-tab="shop"><span class="ni">🎁</span>商城</div>
+  <div class="nav-item" onclick="toggleGlossary()" style="flex:0.5;min-width:36px"><span class="ni">📖</span>术语</div>
+</div>
+
+<!-- 术语说明 -->
+<div class="glossary" id="glossaryBar" style="display:none">
+  <div class="gl-item"><span class="gl-badge" style="background:#0d482e;color:#fff">让球</span> 买这支队伍<b>胜或平都算中</b>，相当于"不败"</div>
+  <div class="gl-item"><span class="gl-badge" style="background:#d4a843;color:#fff">SPF(胜平负)</span> 即"胜平负"，<b>必须猜对赢球才算中</b></div>
+  <div class="gl-item"><span style="font-weight:700">SP</span> = 赔率，<b>投1元中多少元</b>。例：SP2.15=投100中215元</div>
+  <div class="gl-item"><span style="font-weight:700">EV</span> = 期望值，<b>越接近1越划算</b>。超过1就是"价值洼地"</div>
+  <div class="gl-item"><span style="font-weight:700">胜率</span> = 根据Bet365市场赔率算出的<b>真实赢球概率</b></div>
+  <div class="gl-item"><span style="font-weight:700">可单买</span> = <b>可以只买这一场</b>，不用串其他比赛</div>
+  <button onclick="document.getElementById('glossaryBar').style.display='none'" style="background:none;border:none;color:#92400e;font-size:8px;cursor:pointer;padding:2px">✕ 收起</button>
+</div>
+
+<div class="pg active" id="pg-matches"><div id="matchList"><div class="ld"><div class="sp"></div>加载中</div></div></div>
+<div class="pg" id="pg-plan">
+  <!-- 预算选择 -->
+  <div style="margin-bottom:6px">
+    <div style="font-size:10px;font-weight:600;color:#0d482e;margin-bottom:4px">📋 投注方案 · 选预算一键生成</div>
+    <div style="display:flex;gap:4px">
+      <div class="plan-btn" onclick="selectBudget(100)" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer;background:#f0fdf4;color:#0d482e;border:1px solid #bbf7d0">💰 100元<br><span style="font-size:6px;color:#6b7280;font-weight:400">经济型</span></div>
+      <div class="plan-btn active" onclick="selectBudget(500)" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer;background:#0d482e;color:#fff;border:1px solid #0d482e">💰 500元<br><span style="font-size:6px;color:rgba(255,255,255,0.6);font-weight:400">推荐</span></div>
+      <div class="plan-btn" onclick="selectBudget(1000)" style="flex:1;text-align:center;padding:6px 0;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer;background:#fefce8;color:#92400e;border:1px solid #fde68a">💰 1000元<br><span style="font-size:6px;color:#6b7280;font-weight:400">土豪型</span></div>
+    </div>
+  </div>
+  <div id="planContent"><div class="emp">👆 点击上方选择预算，自动生成最优方案</div></div>
+</div>
+<div class="pg" id="pg-champion"><div id="champList"><div class="ld"><div class="sp"></div>加载中</div></div></div>
+<div class="pg" id="pg-review"><div id="reviewList"><div class="ld"><div class="sp"></div>加载复盘</div></div></div>
+<div class="pg" id="pg-battle">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <div><span style="font-size:11px;font-weight:700">⚔️ 人机对战</span><span style="font-size:7px;color:#6b7280;margin-left:4px">AI预测 VS 你的选择</span></div>
+    <div style="background:#f0fdf4;border-radius:6px;padding:3px 8px;text-align:center">
+      <div style="font-size:10px;font-weight:700;color:#0d482e" id="battleScore">1,000</div>
+      <div style="font-size:6px;color:#6b7280">可用积分</div>
+    </div>
+  </div>
+  <div style="background:linear-gradient(135deg,#fefce8,#fff8e1);border:1px solid #fde68a;border-radius:8px;padding:6px 10px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+    <span style="font-size:16px">🤖</span>
+    <div style="font-size:7px;color:#92400e;line-height:1.4">
+      <b>AI已做出预测</b> → 你选一个方向，猜对 <b style="color:#dc2626">+10分</b>，猜错不扣分<br>
+      <span style="font-size:6px;color:#a16207">积分可去商城兑换礼品 🎁</span>
+    </div>
+  </div>
+  <div id="battleList"><div class="ld"><div class="sp"></div>加载对局</div></div>
+</div>
+<div class="pg" id="pg-shop"><div id="shopList"><div class="emp">🎁 积分商城</div></div></div>
+
+<div class="ft" style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px 8px;padding:8px 14px;font-size:6px;color:#9ca3af">
+  <span>📖 <b style="color:#6b7280">让球</b>=胜或平都中</span>
+  <span>📖 <b style="color:#6b7280">SPF(胜平负)</b>=必须赢球</span>
+  <span>📖 <b style="color:#6b7280">SP</b>=赔率</span>
+  <span>📖 <b style="color:#6b7280">EV</b>=期望值&gt;1划算</span>
+  <span>📖 <b style="color:#6b7280">可单买</b>=可单独买</span>
+</div>
+<div style="text-align:center;padding:4px 14px;font-size:6px;color:#d1d5db;letter-spacing:1px" id="footerLuck">🧧 把把都赢 · 顺风顺水 · 一顺百顺 · 百倍好运</div>
+<div class="ft">球弈 · 国家体彩中心世界杯赛事数据</div>
+</div>
+
+<script>
+// 全局变量
+var myScore=1000;var myWins=0;var picks={};var scoreLog=[];
+try{if(typeof localStorage!=='undefined'){
+  var sv=localStorage.getItem('qiuyi_score');if(sv&&sv!='0')myScore=parseInt(sv);
+  var wv=localStorage.getItem('qiuyi_wins');if(wv)myWins=parseInt(wv);
+  var pv=localStorage.getItem('qiuyi_picks');if(pv)picks=JSON.parse(pv);
+  var lv=localStorage.getItem('qiuyi_log');if(lv)scoreLog=JSON.parse(lv);
+}}catch(e){}
+var SP_MAP = {
+  '法国vs摩洛哥':{'1-0':6.00,'2-0':5.50,'2-1':7.50,'3-0':8.00,'3-1':11.00,'0-0':14.00,'1-1':8.00,'2-2':22.00,'0-1':18.00,'0-2':45.00,'1-2':22.00},
+  '西班牙vs比利时':{'1-0':6.50,'2-0':6.00,'2-1':8.00,'3-0':9.00,'3-1':12.00,'0-0':15.00,'1-1':7.50,'2-2':25.00,'0-1':16.00,'0-2':40.00,'1-2':20.00},
+  '挪威vs英格兰':{'1-0':8.50,'2-0':16.00,'2-1':11.00,'0-0':9.00,'1-1':6.00,'2-2':14.00,'0-1':8.00,'0-2':14.00,'1-2':10.00},
+  '阿根廷vs瑞士':{'1-0':5.50,'2-0':5.00,'2-1':7.50,'3-0':7.00,'3-1':10.00,'0-0':12.00,'1-1':7.00,'2-2':20.00,'0-1':20.00,'0-2':50.00,'1-2':25.00},
+};
+var _matchData={};
+var FM={'巴西':'🇧🇷','挪威':'🇳🇴','墨西哥':'🇲🇽','英格兰':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','葡萄牙':'🇵🇹','西班牙':'🇪🇸','美国':'🇺🇸','比利时':'🇧🇪','阿根廷':'🇦🇷','埃及':'🇪🇬','瑞士':'🇨🇭','哥伦比亚':'🇨🇴','法国':'🇫🇷','摩洛哥':'🇲🇦'};
+function em(t){return FM[t]||'🌍'}
+
+// ===== 积分商城 =====
+var shopItems=[
+  {id:'iphone',name:'iPhone 16 Pro',emoji:'📱',price:8888},
+  {id:'airpods',name:'AirPods Pro 3',emoji:'🎧',price:2888},
+  {id:'watch',name:'Apple Watch S10',emoji:'⌚',price:3999},
+  {id:'pad',name:'iPad Air M4',emoji:'📟',price:5999},
+  {id:'gift1',name:'50元京东卡',emoji:'🎫',price:500},
+  {id:'gift2',name:'20元微信红包',emoji:'🧧',price:200},
+];
+function renderShop(){
+  var el=document.getElementById('shopList');
+  var h='<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:9px;font-weight:600"><span>🎁 积分兑换</span><span style="color:#d4a843">'+myScore+' 分</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  for(var i=0;i<shopItems.length;i++){
+    var item=shopItems[i];
+    var canBuy=myScore>=item.price;
+    h+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-align:center"><div style="font-size:28px;margin-bottom:4px">'+item.emoji+'</div><div style="font-size:9px;font-weight:600;color:#1a1a2e">'+item.name+'</div><div style="font-size:10px;font-weight:800;color:#d4a843;margin-top:2px">'+item.price+'分</div><button style="font-size:7px;padding:4px 0;width:100%;border-radius:5px;border:none;margin-top:4px;cursor:pointer;font-weight:600;background:'+(canBuy?'linear-gradient(135deg,#d4a843,#e8a317)':'#e0e0e0')+';color:'+(canBuy?'#fff':'#999')+'" '+(canBuy?'onclick="buyItem(\''+item.id+'\','+item.price+')"':'disabled')+'>'+(canBuy?'兑换':'积分不足')+'</button></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+function loadM(){
+  var el=document.getElementById('matchList');
+  fetch('/api/analysis').then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无数据</div>';return;}
+    var data=d.data;
+    for(var di=0;di<data.length;di++){_matchData[data[di].match_name]=data[di];}
+    var html='';
+    var labs=['明晚04:00','明晚03:00','周日','周六'];
+    for(var mi=0;mi<data.length;mi++){
+      var m=data[mi];
+      var nm=m.match_name;
+      var vsIdx=nm.indexOf('vs');
+      var h=nm.substring(0,vsIdx);
+      var a=nm.substring(vsIdx+2);
+      var li=labs[mi]||'';
+      var mid=m.match_id||'';
+      var spMap=SP_MAP[m.match_name]||{};
+      var tops=m.scores||[];
+      var best=null;
+      for(var si=0;si<tops.length&&si<10;si++){
+        var s=tops[si];
+        var sp=spMap[s.score];
+        if(sp){var ev=sp*s.prob/100;if(!best||ev>best.ev){best={score:s.score,sp:sp,prob:s.prob,ev:ev};}}
+      }
+      var scHtml='';
+      if(best){
+        scHtml='<div class="mc-sc show"><span class="sc-l">🎯 最佳比分</span><span class="sc-r">'+best.score+'@'+best.sp.toFixed(2)+' <span class="'+(best.ev>1?'sc-ev ok':'sc-ev')+'">'+best.prob+'% EV'+best.ev.toFixed(2)+'</span></span></div>';
+      }
+      var spfOpts=m.spf_options||[];
+      var spfHtml='';
+      for(var oi=0;oi<spfOpts.length;oi++){
+        var o=spfOpts[oi];
+        var cls=o.recommended?'mc-o rec':'mc-o';
+        var star=o.recommended?'<span class="o-badge rec">★</span>':'';
+        var evCls=o.ev>1?'g':'';
+        spfHtml+='<div class="'+cls+'"><div class="o-top"><span class="o-badge spf">SPF</span> <span>'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+      }
+      var rqOpts=m.rq_options||[];
+      var rqHtml='';
+      for(var oi=0;oi<rqOpts.length;oi++){
+        var o=rqOpts[oi];
+        var cls=o.recommended?'mc-o rec':'mc-o';
+        var star=o.recommended?'<span class="o-badge rec">★</span>':'';
+        var evCls=o.ev>1?'g':'';
+        rqHtml+='<div class="'+cls+'"><div class="o-top"><span class="o-badge rq">让球</span> <span>'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+      }
+      html=html+'<div class="mc" onclick="showDetail(\''+nm+'\')" style="cursor:pointer"><div class="mc-top"><span class="mc-round">1/4决赛 · '+mid+'</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+li+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h)+'</span><span class="nm">'+h+'</span></div><span>VS</span><div class="mc-t mc-t-r"><span class="nm">'+a+'</span><span class="fl">'+em(a)+'</span></div></div><div>📋 三个选项 · 绿色★=推荐</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px">'+spfHtml+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:0">'+rqHtml+'</div>'+scHtml+'</div>';
+    }
+    el.innerHTML=html;
+  }).catch(function(e){
+    el.innerHTML='<div class="emp">错误: '+e.message+'</div>';
+  });
+}
+
+
+loadM();
+
+setInterval(function(){
+  var fl=document.getElementById('footerLuck');
+  if(fl)fl.textContent=footerLucks[Math.floor(Math.random()*footerLucks.length)];
+  var hl=document.getElementById('luckMsg');
+  if(hl)hl.textContent=headerLucks[Math.floor(Math.random()*headerLucks.length)];
+},5000)
+
+document.querySelectorAll('.nav-item').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.nav-item,.pg').forEach(function(x){x.classList.remove('active')});
+    t.classList.add('active');
+    var pg=document.getElementById('pg-'+t.dataset.tab);
+    if(pg)pg.classList.add('active');
+    if(t.dataset.tab==='matches')loadM();
+    if(t.dataset.tab==='champion')loadC();
+    if(t.dataset.tab==='plan')loadP();
+    if(t.dataset.tab==='review')loadReview();
+    if(t.dataset.tab==='battle')loadB();
+    if(t.dataset.tab==='shop')renderShop();
+  });
+});
+
+
+// === Tab functions (ES5 .then() format) ===
+
+function genP(budget){
+  budget=budget||planBudget||500;
+  var el=document.getElementById('planContent');
+  el.innerHTML='<div class="ld"><div class="sp"></div>计算中...</div>';
+  fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budget:budget})}).then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无合适方案</div>';return;}
+    var p=d.data;
+    var h='<div style="font-size:9px;color:#6b7280;margin-bottom:4px">'+budget+'元预算 · 算法推荐</div><div class="plan-result">';
+    if(p.core&&p.core.length>0){
+      h+='<div style="font-size:8px;font-weight:700;color:#0d482e;padding:3px 0">推荐 · 稳健方案</div>';
+      p.core.forEach(function(item){
+        h+='<div class="pr-item"><div class="pr-l">'+item.picks.join('→').substring(0,40)+'<div class="pr-sub">胜率'+item.win_rate+'% EV'+item.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+item.sp.toFixed(1)+'倍</div><div class="pr-p">'+item.stake+'元 → '+item.payout+'元</div></div></div>';
+      });
+    }
+    if(p.value&&p.value.length>0){
+      h+='<div style="font-size:8px;font-weight:700;color:#d4a843;padding:3px 0;margin-top:2px">价值方案 · 性价比优先</div>';
+      p.value.forEach(function(item){
+        h+='<div class="pr-item"><div class="pr-l">'+item.picks.join('→').substring(0,40)+'<div class="pr-sub">胜率'+item.win_rate+'% EV'+item.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+item.sp.toFixed(1)+'倍</div><div class="pr-p">'+item.stake+'元 → '+item.payout+'元</div></div></div>';
+      });
+    }
+    h+='</div>';
+    if(p.max_payout)h+='<div style="display:flex;justify-content:space-between;padding:6px 8px;margin-top:4px;background:#f0fdf4;border-radius:6px;font-size:8px"><span>总投入 '+budget+'元</span><span>最高可中 '+p.max_payout+'元</span><span>回报率 +'+(p.max_payout/budget*100-100).toFixed(0)+'%</span></div>';
+    el.innerHTML=h;
+  }).catch(function(e){el.innerHTML='<div class="emp">生成失败: '+e.message+'</div>';});
+}
+
+function loadC(){
+  var el=document.getElementById('champList');
+  el.innerHTML='<div class="ld"><div class="sp"></div>加载中...</div>';
+  fetch('/api/champion').then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='暂无夺冠数据';return;}
+    var h='<div class="mc"><table class="rk-table"><tr><th></th><th>球队</th><th style="text-align:center">赔率</th><th style="text-align:right">概率</th></tr>';
+    d.data.slice(0,12).forEach(function(c,i){
+      h+='<tr><td class="rk-num">'+(i+1)+'</td><td class="rk-team"><span>'+em(c.team)+'</span>'+c.team+'</td><td class="rk-sp">'+c.sp.toFixed(2)+'</td><td class="rk-prob">'+c.implied_prob+'%</td></tr>';
+    });
+    h+='</table></div>';el.innerHTML=h;
+  }).catch(function(e){el.innerHTML='获取失败';});
+}
+
+function loadB(){
+  var el=document.getElementById('battleList');
+  el.innerHTML='<div class="ld"><div class="sp"></div>加载中...</div>';
+  fetch('/api/analysis').then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='暂无数据';return;}
+    var data=d.data;
+    var html='';
+    for(var mi=0;mi<data.length;mi++){
+      var m=data[mi];
+      var _pa=m.match_name.split('vs');var h=_pa[0];var a=_pa[1];
+      var spf=m.spf_options[0];
+      html+='<div class="mc" style="padding:8px"><b>'+m.match_id+'</b> '+em(h)+h+' vs '+a+em(a)+'<br>SPF '+spf.label+' @'+spf.sp.toFixed(2)+' EV'+spf.ev+'</div>';
+    }
+    el.innerHTML=html;
+  }).catch(function(e){el.innerHTML='获取失败';});
+}
+
+function selectBudget(b){planBudget=b;genP(b);}
+
+function loadP(){genP(planBudget||500);}
+
+function loadReview(){
+  var el=document.getElementById('reviewList');
+  el.innerHTML='<div class="ld"><div class="sp"></div>复盘加载中...</div>';
+  fetch('/api/review').then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='暂无复盘数据';return;}
+    var h='';d.data.forEach(function(r){
+      h+='<div class="mc" style="padding:8px"><b>'+r.match+'</b><br>'+r.summary+'</div>';
+    });
+    el.innerHTML=h||'暂无';
+  }).catch(function(e){el.innerHTML='复盘获取失败';});
+}
+
+function toggleGlossary(){
+  var bar=document.getElementById('glossaryBar');
+  bar.style.display=bar.style.display==='none'?'block':'none';
+}
+
+function pickBattle(key,label){
+  if(picks[key])return;
+  picks[key]=label;myScore+=10;myWins+=1;
+  localStorage.setItem('qiuyi_picks',JSON.stringify(picks));
+  if(myScore==0){myScore=1000;localStorage.setItem('qiuyi_score','1000')}
+  updateScore();loadB();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0d482e;color:#fff;padding:6px 14px;border-radius:6px;font-size:9px;z-index:999;font-weight:600';
+  t.textContent='+10积分!';
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2000);
+}
+
+
+
+function showDetail(nm){
+  var d=document.getElementById('detailModal');
+  var c=document.getElementById('dmContent');
+  var m=_matchData[nm];
+  if(!m){c.innerHTML='<div class="emp">数据加载中</div>';d.style.display='block';return;}
+  document.getElementById('dmTitle').textContent=nm+' · 1/4决赛';
+  var spMap=SP_MAP[nm]||{};
+  var h='<table class="rk-table"><tr><th>SPF</th><th>赔率</th><th>胜率</th><th>EV</th></tr>';
+  var so=m.spf_options||[];
+  for(var i=0;i<so.length;i++){var o=so[i];h+='<tr><td>'+(o.recommended?'★ ':'')+o.label+'</td><td class="rk-sp">'+o.sp.toFixed(2)+'</td><td>'+o.win_rate+'%</td><td>EV'+o.ev+'</td></tr>';}
+  h+='</table><br><table class="rk-table"><tr><th>RQ</th><th>赔率</th><th>胜率</th><th>EV</th></tr>';
+  var ro=m.rq_options||[];
+  for(var j=0;j<ro.length;j++){var o2=ro[j];h+='<tr><td>'+(o2.recommended?'★ ':'')+o2.label+'</td><td class="rk-sp">'+o2.sp.toFixed(2)+'</td><td>'+o2.win_rate+'%</td><td>EV'+o2.ev+'</td></tr>';}
+  h+='</table>';
+  var keys=Object.keys(spMap);
+  if(keys.length>0){
+    keys.sort(function(a,b){return spMap[a]-spMap[b];});
+    h+='<br><div style="font-weight:600;margin-bottom:4px;font-size:9px">比分赔率 Top10</div><table class="rk-table"><tr><th>比分</th><th>赔率</th></tr>';
+    for(var k=0;k<Math.min(keys.length,10);k++){h+='<tr><td>'+keys[k]+'</td><td class="rk-sp">'+spMap[keys[k]].toFixed(2)+'</td></tr>';}
+    h+='</table>';
+  }
+  c.innerHTML=h;d.style.display='block';
+}
+
+</script>
+
+<div id="detailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;overflow-y:auto" onclick="if(event.target===this)this.style.display='none'">
+<div style="background:#fff;margin:10px;border-radius:12px;padding:12px;max-width:500px;margin:10px auto;max-height:90vh;overflow-y:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:sticky;top:0;background:#fff;padding-bottom:6px;border-bottom:1px solid #eee;z-index:1">
+<span style="font-size:13px;font-weight:700" id="dmTitle">比赛详情</span>
+<span style="font-size:20px;cursor:pointer;line-height:1" onclick="document.getElementById('detailModal').style.display='none'">&times;</span>
+</div>
+<div id="dmContent"></div>
+</div></div>
+
+</body>
+</html>
