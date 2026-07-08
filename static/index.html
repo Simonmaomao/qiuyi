@@ -137,17 +137,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     </div>
   </div>
   <div class="top-info">
-    <div class="ti">🏆 世界杯2026 <span style="color:rgba(255,255,255,0.15)">|</span> 🇺🇸 美国·墨西哥·加拿大 <span style="color:rgba(255,255,255,0.15)">|</span> ⚽ 淘汰赛 · 1/8决赛</div>
+    <div class="ti">🏆 世界杯2026 <span style="color:rgba(255,255,255,0.15)">|</span> 🇺🇸 美国·墨西哥·加拿大 <span style="color:rgba(255,255,255,0.15)">|</span> ⚽ 淘汰赛 · 1/4决赛</div>
     <div style="font-size:7px;color:rgba(255,255,255,0.25);margin-top:1px;letter-spacing:2px" id="luckMsg">🧧 把把都赢 · 顺风顺水 · 好运连连</div>
   </div>
   <div class="top-progress">
     <div class="tp-item done" style="font-size:9px;letter-spacing:-2px"><span>🇺🇸🇲🇽🇨🇦</span></div>
     <div class="tp-conn done"></div>
     <div class="tp-item done"><span>16强</span></div>
+    <div class="tp-conn done"></div>
+    <div class="tp-item done"><span>8强</span></div>
     <div class="tp-conn active"></div>
-    <div class="tp-item active"><span>8强</span></div>
-    <div class="tp-conn"></div>
-    <div class="tp-item"><span>4强</span></div>
+    <div class="tp-item active"><span>4强</span></div>
     <div class="tp-conn"></div>
     <div class="tp-item"><span>🏆</span></div>
   </div>
@@ -228,13 +228,13 @@ try{if(typeof localStorage!=='undefined'){
   var pv=localStorage.getItem('qiuyi_picks');if(pv)picks=JSON.parse(pv);
   var lv=localStorage.getItem('qiuyi_log');if(lv)scoreLog=JSON.parse(lv);
 }}catch(e){}
-const SP_MAP = {
-  '葡萄牙vs西班牙':{'0-1':7.50,'1-1':6.50,'0-0':18.00,'1-0':11.00,'0-2':12.00,'1-2':10.00,'2-1':9.00,'2-0':20.00,'1-3':15.00,'3-1':22.00},
-  '美国vs比利时':{'1-1':6.50,'0-1':9.00,'1-0':9.00,'0-0':16.00,'2-1':8.00,'0-2':15.00,'2-0':18.00,'1-2':10.00,'0-3':28.00,'2-2':14.00},
-  '阿根廷vs埃及':{'1-0':6.00,'2-0':4.50,'3-0':6.90,'2-1':7.50,'3-1':11.00,'4-0':12.00,'1-1':9.00,'0-0':21.00,'5-0':20.00,'3-2':14.00},
-  '瑞士vs哥伦比亚':{'0-1':7.00,'1-1':6.00,'0-0':14.00,'1-0':8.50,'0-2':10.00,'1-2':9.00,'2-1':8.50,'2-0':16.00,'0-3':22.00,'1-3':16.00},
+var SP_MAP = {
+  '法国vs摩洛哥':{'1-0':6.00,'2-0':5.50,'2-1':7.50,'3-0':8.00,'3-1':11.00,'0-0':14.00,'1-1':8.00,'2-2':22.00,'0-1':18.00,'0-2':45.00,'1-2':22.00},
+  '西班牙vs比利时':{'1-0':6.50,'2-0':6.00,'2-1':8.00,'3-0':9.00,'3-1':12.00,'0-0':15.00,'1-1':7.50,'2-2':25.00,'0-1':16.00,'0-2':40.00,'1-2':20.00},
+  '挪威vs英格兰':{'1-0':8.50,'2-0':16.00,'2-1':11.00,'0-0':9.00,'1-1':6.00,'2-2':14.00,'0-1':8.00,'0-2':14.00,'1-2':10.00},
+  '阿根廷vs瑞士':{'1-0':5.50,'2-0':5.00,'2-1':7.50,'3-0':7.00,'3-1':10.00,'0-0':12.00,'1-1':7.00,'2-2':20.00,'0-1':20.00,'0-2':50.00,'1-2':25.00},
 };
-const FM={'巴西':'🇧🇷','挪威':'🇳🇴','墨西哥':'🇲🇽','英格兰':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','葡萄牙':'🇵🇹','西班牙':'🇪🇸','美国':'🇺🇸','比利时':'🇧🇪','阿根廷':'🇦🇷','埃及':'🇪🇬','瑞士':'🇨🇭','哥伦比亚':'🇨🇴','法国':'🇫🇷','摩洛哥':'🇲🇦'};
+var FM={'巴西':'🇧🇷','挪威':'🇳🇴','墨西哥':'🇲🇽','英格兰':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','葡萄牙':'🇵🇹','西班牙':'🇪🇸','美国':'🇺🇸','比利时':'🇧🇪','阿根廷':'🇦🇷','埃及':'🇪🇬','瑞士':'🇨🇭','哥伦比亚':'🇨🇴','法国':'🇫🇷','摩洛哥':'🇲🇦'};
 function em(t){return FM[t]||'🌍'}
 
 // ===== 积分商城 =====
@@ -291,15 +291,13 @@ function updateScore(){
   var bs=document.getElementById('battleScore');
   if(bs)bs.textContent=myScore.toLocaleString();
 }
-async function loadM(){
+function loadM(){
   var el=document.getElementById('matchList');
-  try{
-    var r=await fetch('/api/analysis');
-    var d=await r.json();
+  fetch('/api/analysis').then(function(r){return r.json();}).then(function(d){
     if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无数据</div>';return;}
     var data=d.data;
     var html='';
-    var labs=['明晚22:00','明晚22:00','后天','后天'];
+    var labs=['明晚04:00','明晚03:00','周六','周日'];
     for(var mi=0;mi<data.length;mi++){
       var m=data[mi];
       var nm=m.match_name;
@@ -308,9 +306,7 @@ async function loadM(){
       var a=nm.substring(vsIdx+2);
       var li=labs[mi]||'';
       var mid=m.match_id||'';
-      
-      // 比分推荐
-      var spMap=SCORE_SP[m.match_name]||{};
+      var spMap=SP_MAP[m.match_name]||{};
       var tops=m.scores||[];
       var best=null;
       for(var si=0;si<tops.length&&si<10;si++){
@@ -320,37 +316,33 @@ async function loadM(){
       }
       var scHtml='';
       if(best){
-        var lbl=best.ev>1?'💰':best.ev>0.85?'✅':'⚡';
         scHtml='<div class="mc-sc show"><span class="sc-l">🎯 最佳比分</span><span class="sc-r">'+best.score+'@'+best.sp.toFixed(2)+' <span class="'+(best.ev>1?'sc-ev ok':'sc-ev')+'">'+best.prob+'% EV'+best.ev.toFixed(2)+'</span></span></div>';
       }
-      
-      // 构建三个选项表格 - SPF
-      var spfOpts=m.spf_options&&m.spf_options[1]_options||[];
+      var spfOpts=m.spf_options||[];
       var spfHtml='';
       for(var oi=0;oi<spfOpts.length;oi++){
         var o=spfOpts[oi];
         var cls=o.recommended?'mc-o rec':'mc-o';
         var star=o.recommended?'<span class="o-badge rec">★</span>':'';
         var evCls=o.ev>1?'g':'';
-        spfHtml+='<div class="'+cls+'" style="cursor:pointer" onclick="alert(\'SPF '+o.label+': SP'+o.sp+' 胜率'+o.win_rate+'% EV'+o.ev+'\')"><div class="o-top"><span class="o-badge spf">SPF</span> <span style="font-size:7px;color:#6b7280">'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+        spfHtml+='<div class="'+cls+'"><div class="o-top"><span class="o-badge spf">SPF</span> <span>'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
       }
-      
-      // 让球三个选项
-      var rqOpts=m.rq_options&&m.rq_options[1]_options||[];
+      var rqOpts=m.rq_options||[];
       var rqHtml='';
       for(var oi=0;oi<rqOpts.length;oi++){
         var o=rqOpts[oi];
         var cls=o.recommended?'mc-o rec':'mc-o';
         var star=o.recommended?'<span class="o-badge rec">★</span>':'';
         var evCls=o.ev>1?'g':'';
-        rqHtml+='<div class="'+cls+'" style="cursor:pointer" onclick="alert(\'让球 '+o.label+': SP'+o.sp+' 胜率'+o.win_rate+'% EV'+o.ev+'\')"><div class="o-top"><span class="o-badge rq">让球</span> <span style="font-size:7px;color:#6b7280">'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
+        rqHtml+='<div class="'+cls+'"><div class="o-top"><span class="o-badge rq">让球</span> <span>'+o.label+'</span>'+star+'</div><div class="o-sp '+evCls+'">'+o.sp.toFixed(2)+'</div><div class="o-meta">'+o.win_rate+'% · EV'+o.ev+'</div></div>';
       }
-      
-      html=html+'<div class="mc"><div class="mc-top"><span class="mc-round">1/8决赛 · '+mid+'</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+li+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h)+'</span><span class="nm">'+h+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm">'+a+'</span><span class="fl">'+em(a)+'</span></div></div><div style="font-size:7px;color:#6b7280;margin-bottom:4px;font-weight:500">📋 三个选项 · 绿色★=推荐</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px">'+spfHtml+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:0">'+rqHtml+'</div>'+scHtml+'</div>';
+      html=html+'<div class="mc"><div class="mc-top"><span class="mc-round">1/4决赛 · '+mid+'</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+li+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h)+'</span><span class="nm">'+h+'</span></div><span>VS</span><div class="mc-t mc-t-r"><span class="nm">'+a+'</span><span class="fl">'+em(a)+'</span></div></div><div>📋 三个选项 · 绿色★=推荐</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:4px">'+spfHtml+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-bottom:0">'+rqHtml+'</div>'+scHtml+'</div>';
     }
     el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="emp">加载失败</div>'}
-}function updateTicker(data){
+  }).catch(function(e){
+    el.innerHTML='<div class="emp">错误: '+e.message+'</div>';
+  });
+}
   const el=document.getElementById('scoreTicker');
   let h='<div class="scroll-item"><span class="s">⚽</span> 1/8决赛</div>';
   data.forEach(m=>{

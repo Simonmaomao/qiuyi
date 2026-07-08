@@ -149,7 +149,7 @@ class AnalysisEngine:
         }
 
     def optimize_parlay(self, analyses: List[Dict], budget: float = 500,
-                       min_ev: float = 0.80, max_picks: int = 4) -> List[Dict]:
+                       min_ev: float = 0.68, max_picks: int = 4) -> List[Dict]:
         picks = []
         for a in analyses:
             for opt_key in ['spf_options', 'rq_options']:
@@ -182,9 +182,9 @@ class AnalysisEngine:
 
     def generate_plan(self, analyses: List[Dict], budget: float = 500) -> Dict:
         parlays = self.optimize_parlay(analyses, budget)
-        core = [p for p in parlays if p['ev'] > 0.82 and p['win_rate'] > 10][:3]
-        value = [p for p in parlays if 0.78 <= p['ev'] <= 0.82][:3]
-        fun = [p for p in parlays if p['ev'] > 0.75 and p['win_rate'] < 10][:3]
+        core = [p for p in parlays if p['ev'] > 0.70 and p['win_rate'] > 10][:3]
+        value = [p for p in parlays if 0.65 <= p['ev'] <= 0.70][:3]
+        fun = [p for p in parlays if p['ev'] > 0.60 and p['win_rate'] < 10][:3]
         if core:
             cs = budget * 0.6
             for p in core:
