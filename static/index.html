@@ -144,10 +144,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
     <div class="tp-item done" style="font-size:9px;letter-spacing:-2px"><span>🇺🇸🇲🇽🇨🇦</span></div>
     <div class="tp-conn done"></div>
     <div class="tp-item done"><span>16强</span></div>
-    <div class="tp-conn done"></div>
-    <div class="tp-item done"><span>8强</span></div>
     <div class="tp-conn active"></div>
-    <div class="tp-item active"><span>4强</span></div>
+    <div class="tp-item active"><span>8强</span></div>
+    <div class="tp-conn"></div>
+    <div class="tp-item"><span>4强</span></div>
     <div class="tp-conn"></div>
     <div class="tp-item"><span>🏆</span></div>
   </div>
@@ -344,7 +344,7 @@ function loadM(){
   });
 }
   const el=document.getElementById('scoreTicker');
-  let h='<div class="scroll-item"><span class="s">⚽</span> 1/8决赛</div>';
+  let h='<div class="scroll-item"><span class="s">⚽</span> 1/4决赛</div>';
   data.forEach(m=>{
     const spMap=SP_MAP[m.match_name]||{};
     const best=bestScore(m.scores,spMap);
@@ -376,7 +376,7 @@ async function loadB(){
       const key=m.match_name;const ai=aiPicks[key]||'待分析';
       const due=dueMap[key]||'';const [h,a]=m.match_name.split('vs');
       const hasPick=picks[key]||'';
-      html+='<div class="mc" style="padding:8px 10px"><div class="mc-top"><span class="mc-round">⚽ 1/8决赛</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+due+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h.trim())+'</span><span class="nm" style="font-size:11px">'+h.trim()+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm" style="font-size:11px">'+a.trim()+'</span><span class="fl">'+em(a.trim())+'</span></div></div><div style="font-size:7px;background:#fefce8;border-radius:4px;padding:3px 6px;margin-bottom:4px;color:#92400e">🤖 AI预测: <b>'+ai+'</b></div><div class="pick-row" data-key="'+key+'">';
+      html+='<div class="mc" style="padding:8px 10px"><div class="mc-top"><span class="mc-round">⚽ 1/4决赛</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+due+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h.trim())+'</span><span class="nm" style="font-size:11px">'+h.trim()+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm" style="font-size:11px">'+a.trim()+'</span><span class="fl">'+em(a.trim())+'</span></div></div><div style="font-size:7px;background:#fefce8;border-radius:4px;padding:3px 6px;margin-bottom:4px;color:#92400e">🤖 AI预测: <b>'+ai+'</b></div><div class="pick-row" data-key="'+key+'">';
       opts.forEach(o=>{
         const sel=hasPick===o.l?'selected':'';
         html+='<div class="pick-btn '+sel+'" onclick="selectPick(\''+key+'\',\''+o.l+'\')" '+(hasPick?'disabled':'')+'>'+o.l+'<br><span style="font-size:5px;font-weight:400;color:#999">'+o.d+'</span></div>';
