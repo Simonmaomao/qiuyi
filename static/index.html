@@ -229,10 +229,9 @@ try{if(typeof localStorage!=='undefined'){
   var lv=localStorage.getItem('qiuyi_log');if(lv)scoreLog=JSON.parse(lv);
 }}catch(e){}
 var SP_MAP = {
-  '法国vs摩洛哥':{'1-0':6.00,'2-0':5.50,'2-1':7.50,'3-0':8.00,'3-1':11.00,'0-0':14.00,'1-1':8.00,'2-2':22.00,'0-1':18.00,'0-2':45.00,'1-2':22.00},
-  '西班牙vs比利时':{'1-0':6.50,'2-0':6.00,'2-1':8.00,'3-0':9.00,'3-1':12.00,'0-0':15.00,'1-1':7.50,'2-2':25.00,'0-1':16.00,'0-2':40.00,'1-2':20.00},
-  '挪威vs英格兰':{'1-0':8.50,'2-0':16.00,'2-1':11.00,'0-0':9.00,'1-1':6.00,'2-2':14.00,'0-1':8.00,'0-2':14.00,'1-2':10.00},
-  '阿根廷vs瑞士':{'1-0':5.50,'2-0':5.00,'2-1':7.50,'3-0':7.00,'3-1':10.00,'0-0':12.00,'1-1':7.00,'2-2':20.00,'0-1':20.00,'0-2':50.00,'1-2':25.00},
+  '西班牙vs比利时':{'1-0':7.75,'2-0':6.00,'2-1':5.60,'3-0':15.00,'3-1':9.50,'3-2':19.00,'4-0':32.00,'4-1':30.00,'4-2':40.00,'5-0':75.00,'5-1':75.00,'5-2':90.00,'0-0':14.00,'1-1':7.25,'2-2':12.00,'3-3':40.00,'0-1':17.00,'0-2':34.00,'1-2':16.00,'0-3':100.0,'1-3':50.00,'2-3':40.00,'0-4':300.0,'1-4':150.0,'2-4':120.0,'0-5':700.0,'1-5':500.0,'2-5':400.0},
+  '挪威vs英格兰':{'1-0':15.00,'2-0':22.00,'2-1':9.00,'3-0':55.00,'3-1':28.00,'3-2':24.00,'4-0':150.0,'4-1':90.00,'4-2':90.00,'5-0':500.0,'5-1':350.0,'5-2':350.0,'0-0':14.00,'1-1':7.25,'2-2':10.00,'3-3':40.00,'0-1':9.05,'0-2':10.50,'1-2':6.50,'0-3':16.00,'1-3':11.50,'2-3':17.00,'0-4':42.00,'1-4':29.00,'2-4':45.00,'0-5':100.0,'1-5':75.00,'2-5':120.0},
+  '阿根廷vs瑞士':{'1-0':5.90,'2-0':6.20,'2-1':6.00,'3-0':13.00,'3-1':11.00,'3-2':28.00,'4-0':27.00,'4-1':35.00,'4-2':75.00,'5-0':90.00,'5-1':100.0,'5-2':250.0,'0-0':8.50,'1-1':6.20,'2-2':17.00,'3-3':80.00,'0-1':12.00,'0-2':34.00,'1-2':15.00,'0-3':100.0,'1-3':55.00,'2-3':65.00,'0-4':400.0,'1-4':300.0,'2-4':350.0,'0-5':1000,'1-5':800.0,'2-5':900.0},
 };
 var FM={'巴西':'🇧🇷','挪威':'🇳🇴','墨西哥':'🇲🇽','英格兰':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','葡萄牙':'🇵🇹','西班牙':'🇪🇸','美国':'🇺🇸','比利时':'🇧🇪','阿根廷':'🇦🇷','埃及':'🇪🇬','瑞士':'🇨🇭','哥伦比亚':'🇨🇴','法国':'🇫🇷','摩洛哥':'🇲🇦'};
 function em(t){return FM[t]||'🌍'}
@@ -297,7 +296,7 @@ function loadM(){
     if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无数据</div>';return;}
     var data=d.data;
     var html='';
-    var labs=['明晚04:00','明晚03:00','周六','周日'];
+    var labs=['明晨03:00','后天05:00','后天09:00'];
     for(var mi=0;mi<data.length;mi++){
       var m=data[mi];
       var nm=m.match_name;
@@ -343,125 +342,122 @@ function loadM(){
     el.innerHTML='<div class="emp">错误: '+e.message+'</div>';
   });
 }
-  const el=document.getElementById('scoreTicker');
-  let h='<div class="scroll-item"><span class="s">⚽</span> 1/4决赛</div>';
-  data.forEach(m=>{
-    const spMap=SP_MAP[m.match_name]||{};
-    const best=bestScore(m.scores,spMap);
-    if(best){const nm=m.match_name.replace('vs',' ');h+=`<div class="scroll-item"><span class="s">${nm}</span> ${best.score} <span class="tag-ev">${best.ev>1?'+'+best.ev.toFixed(1):best.ev.toFixed(1)}</span></div>`;}
-  });
-  el.innerHTML=h;
-}
-
+// bestScore helper (ES5)
 function bestScore(scores,spMap){
-  let best=null;
-  (scores||[]).slice(0,10).forEach(s=>{
-    const sp=spMap[s.score];
-    if(sp){const ev=sp*s.prob/100;if(!best||ev>best.ev)best={score:s.score,sp,prob:s.prob,ev};}
-  });
+  var best=null;
+  var arr=scores||[];
+  for(var si=0;si<arr.length&&si<10;si++){
+    var s=arr[si];
+    var sp=spMap[s.score];
+    if(sp){var ev=sp*s.prob/100;if(!best||ev>best.ev)best={score:s.score,sp:sp,prob:s.prob,ev:ev};}
+  }
   return best;
 }
 
-async function loadB(){
-  const el=document.getElementById('battleList');
-  try{
-    const r=await fetch('/api/analysis');const d=await r.json();
-    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无数据</div>';return}
-    const data=d.data;
-    const aiPicks={'巴西vs挪威':'挪威不败','墨西哥vs英格兰':'墨西哥不败','葡萄牙vs西班牙':'葡萄牙不败','美国vs比利时':'美国不败','阿根廷vs埃及':'阿根廷不败','瑞士vs哥伦比亚':'瑞士不败'};
-    const dueMap={'巴西vs挪威':'今晚23:00','墨西哥vs英格兰':'今晚23:00','葡萄牙vs西班牙':'明晚22:00','美国vs比利时':'明晚22:00','阿根廷vs埃及':'后天','瑞士vs哥伦比亚':'后天'};
-    const opts=[{l:'主不败',d:'胜或平'},{l:'主胜',d:'必须赢'},{l:'平局',d:'打平'},{l:'客胜',d:'必须赢'},{l:'客不败',d:'平或胜'}];
-    let html='';
-    data.forEach(m=>{
-      const key=m.match_name;const ai=aiPicks[key]||'待分析';
-      const due=dueMap[key]||'';const [h,a]=m.match_name.split('vs');
-      const hasPick=picks[key]||'';
-      html+='<div class="mc" style="padding:8px 10px"><div class="mc-top"><span class="mc-round">⚽ 1/4决赛</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+due+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h.trim())+'</span><span class="nm" style="font-size:11px">'+h.trim()+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm" style="font-size:11px">'+a.trim()+'</span><span class="fl">'+em(a.trim())+'</span></div></div><div style="font-size:7px;background:#fefce8;border-radius:4px;padding:3px 6px;margin-bottom:4px;color:#92400e">🤖 AI预测: <b>'+ai+'</b></div><div class="pick-row" data-key="'+key+'">';
-      opts.forEach(o=>{
-        const sel=hasPick===o.l?'selected':'';
-        html+='<div class="pick-btn '+sel+'" onclick="selectPick(\''+key+'\',\''+o.l+'\')" '+(hasPick?'disabled':'')+'>'+o.l+'<br><span style="font-size:5px;font-weight:400;color:#999">'+o.d+'</span></div>';
-      });
-      html+='</div>'+(hasPick?'<div style="font-size:7px;color:#0d482e;margin-top:3px">✅ 你的选择: '+hasPick+' (+10分)</div>':'')+'</div>';
-    });
+function loadB(){
+  var el=document.getElementById('battleList');
+  fetch('/api/analysis').then(function(r){return r.json();}).then(function(d){
+    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无数据</div>';return;}
+    var data=d.data;
+    var aiPicks={'西班牙vs比利时':'西班牙不败','挪威vs英格兰':'挪威不败','阿根廷vs瑞士':'阿根廷不败'};
+    var dueMap={'西班牙vs比利时':'明晨03:00','挪威vs英格兰':'后天05:00','阿根廷vs瑞士':'后天09:00'};
+    var opts=[{l:'主不败',d:'胜或平'},{l:'主胜',d:'必须赢'},{l:'平局',d:'打平'},{l:'客胜',d:'必须赢'},{l:'客不败',d:'平或胜'}];
+    var html='';
+    for(var mi=0;mi<data.length;mi++){
+      var m=data[mi];
+      var key=m.match_name;
+      var ai=aiPicks[key]||'待分析';
+      var due=dueMap[key]||'';
+      var parts=m.match_name.split('vs');
+      var h=parts[0];var a=parts[1];
+      var hasPick=picks[key]||'';
+      html=html+'<div class="mc" style="padding:8px 10px"><div class="mc-top"><span class="mc-round">⚽ 1/4决赛</span><span class="mc-tags"><span class="tag-dg">可单买</span><span class="tag-time">'+due+'</span></span></div><div class="mc-teams"><div class="mc-t"><span class="fl">'+em(h.trim())+'</span><span class="nm" style="font-size:11px">'+h.trim()+'</span></div><span style="font-size:7px;color:#d1d5db">VS</span><div class="mc-t mc-t-r"><span class="nm" style="font-size:11px">'+a.trim()+'</span><span class="fl">'+em(a.trim())+'</span></div></div><div style="font-size:7px;background:#fefce8;border-radius:4px;padding:3px 6px;margin-bottom:4px;color:#92400e">🤖 AI预测: <b>'+ai+'</b></div><div class="pick-row" data-key="'+key+'">';
+      for(var oi=0;oi<opts.length;oi++){
+        var o=opts[oi];
+        var sel=hasPick===o.l?'selected':'';
+        html=html+'<div class="pick-btn '+sel+'" onclick="pickBattle(\''+key+'\',\''+o.l+'\')" '+(hasPick?'disabled':'')+'>'+o.l+'<br><span style="font-size:5px;font-weight:400;color:#999">'+o.d+'</span></div>';
+      }
+      html=html+'</div>'+(hasPick?'<div style="font-size:7px;color:#0d482e;margin-top:3px">✅ 你的选择: '+hasPick+' (+10分)</div>':'')+'</div>';
+    }
     el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="emp">加载失败</div>'}
+  }).catch(function(e){el.innerHTML='<div class="emp">加载失败</div>';});
 }
 
-async function loadC(){
-  const el=document.getElementById('champList');
-  try{
-    const r=await fetch('/api/champion');const d=await r.json();
-    if(!d.success){el.innerHTML='<div class="emp">暂无数据</div>';return}
-    let h='<div class="mc"><table class="rk-table"><tr><th></th><th>球队</th><th style="text-align:center">赔率</th><th style="text-align:right">概率</th></tr>';
-    d.data.slice(0,12).forEach((c,i)=>{
-      h+=`<tr><td class="rk-num">${i+1}</td><td class="rk-team"><span>${em(c.team)}</span>${c.team}</td><td class="rk-sp">${c.sp.toFixed(2)}</td><td class="rk-prob">${c.implied_prob}%</td></tr>`;
-    });
-    h+='</table></div>';el.innerHTML=h;
-  }catch(e){el.innerHTML='<div class="emp">获取失败</div>'}
+function loadC(){
+  var el=document.getElementById('champList');
+  fetch('/api/champion').then(function(r){return r.json();}).then(function(d){
+    if(!d.success){el.innerHTML='<div class="emp">暂无数据</div>';return;}
+    var h='<div class="mc"><table class="rk-table"><tr><th></th><th>球队</th><th style="text-align:center">赔率</th><th style="text-align:right">概率</th></tr>';
+    var items=d.data.slice(0,12);
+    for(var i=0;i<items.length;i++){
+      var c=items[i];
+      h=h+'<tr><td class="rk-num">'+(i+1)+'</td><td class="rk-team"><span>'+em(c.team)+'</span>'+c.team+'</td><td class="rk-sp">'+c.sp.toFixed(2)+'</td><td class="rk-prob">'+c.implied_prob+'%</td></tr>';
+    }
+    h=h+'</table></div>';el.innerHTML=h;
+  }).catch(function(e){el.innerHTML='<div class="emp">获取失败</div>';});
 }
 
-let planBudget=500;
+var planBudget=500;
 function selectBudget(val){
   planBudget=val;
-  document.querySelectorAll('.plan-btn').forEach(b=>{
-    b.style.background='#f9fafb';b.style.color='#6b7280';b.style.borderColor='#e5e7eb';
-  });
-  event.target.closest('.plan-btn').style.background=val===500?'#0d482e':'#f0fdf4';
-  event.target.closest('.plan-btn').style.color=val===500?'#fff':'#0d482e';
-  event.target.closest('.plan-btn').style.borderColor=val===500?'#0d482e':'#bbf7d0';
+  var btns=document.querySelectorAll('.plan-btn');
+  for(var i=0;i<btns.length;i++){btns[i].style.background='#f9fafb';btns[i].style.color='#6b7280';btns[i].style.borderColor='#e5e7eb';}
+  var btn=event.target.closest('.plan-btn');
+  if(btn){
+    btn.style.background=val===500?'#0d482e':'#f0fdf4';
+    btn.style.color=val===500?'#fff':'#0d482e';
+    btn.style.borderColor=val===500?'#0d482e':'#bbf7d0';
+  }
   genP(val);
 }
-async function loadP(){
-  const el=document.getElementById('planContent');
+function loadP(){
   genP(500);
 }
-async function genP(budget){
+function genP(budget){
   budget=budget||planBudget||500;
-  const el=document.getElementById('planContent');
+  var el=document.getElementById('planContent');
   el.innerHTML='<div class="ld"><div class="sp"></div>计算中...</div>';
-  try{
-    const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budget:budget})});
-    const d=await r.json();
-    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无合适方案</div>';return}
-    const p=d.data;let h='<div style="font-size:9px;color:#6b7280;margin-bottom:4px">💰 <b style="color:#0d482e">'+budget+'元预算</b> · 以下为算法推荐方案</div><div class="plan-result">';
-    
-    // 核心方案
+  fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budget:budget})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.success||!d.data){el.innerHTML='<div class="emp">暂无合适方案</div>';return;}
+    var p=d.data;
+    var h='<div style="font-size:9px;color:#6b7280;margin-bottom:4px">💰 <b style="color:#0d482e">'+budget+'元预算</b> · 以下为算法推荐方案</div><div class="plan-result">';
     if(p.core&&p.core.length>0){
-      h+='<div style="font-size:8px;font-weight:700;color:#0d482e;padding:3px 0;display:flex;align-items:center;gap:4px"><span style="background:#0d482e;color:#fff;font-size:6px;padding:1px 5px;border-radius:3px">推荐</span>🛡️ 稳健方案 · 胜率优先</div>';
-      p.core.forEach(item=>{
-        h+='<div class="pr-item"><div class="pr-l">'+item.picks.join(' → ').substring(0,40)+'<div class="pr-sub">胜率'+item.win_rate+'% · 期望值'+item.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+item.sp.toFixed(1)+'倍</div><div class="pr-p">'+item.stake+'元 → <b>'+item.payout+'元</b></div></div></div>';
-      });
+      h=h+'<div style="font-size:8px;font-weight:700;color:#0d482e;padding:3px 0;display:flex;align-items:center;gap:4px"><span style="background:#0d482e;color:#fff;font-size:6px;padding:1px 5px;border-radius:3px">推荐</span>🛡️ 稳健方案 · 胜率优先</div>';
+      for(var ci=0;ci<p.core.length;ci++){
+        var item=p.core[ci];
+        h=h+'<div class="pr-item"><div class="pr-l">'+item.picks.join(' → ').substring(0,40)+'<div class="pr-sub">胜率'+item.win_rate+'% · 期望值'+item.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+item.sp.toFixed(1)+'倍</div><div class="pr-p">'+item.stake+'元 → <b>'+item.payout+'元</b></div></div></div>';
+      }
     }
-    
-    // 价值方案
     if(p.value&&p.value.length>0){
-      h+='<div style="font-size:8px;font-weight:700;color:#d4a843;padding:3px 0;margin-top:2px">⚡ 价值方案 · 性价比优先</div>';
-      p.value.forEach(item=>{
-        h+='<div class="pr-item"><div class="pr-l">'+item.picks.join(' → ').substring(0,40)+'<div class="pr-sub">胜率'+item.win_rate+'% · 期望值'+item.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+item.sp.toFixed(1)+'倍</div><div class="pr-p">'+item.stake+'元 → <b>'+item.payout+'元</b></div></div></div>';
-      });
+      h=h+'<div style="font-size:8px;font-weight:700;color:#d4a843;padding:3px 0;margin-top:2px">⚡ 价值方案 · 性价比优先</div>';
+      for(var vi=0;vi<p.value.length;vi++){
+        var vitem=p.value[vi];
+        h=h+'<div class="pr-item"><div class="pr-l">'+vitem.picks.join(' → ').substring(0,40)+'<div class="pr-sub">胜率'+vitem.win_rate+'% · 期望值'+vitem.ev+'</div></div><div class="pr-r"><div class="pr-sp">'+vitem.sp.toFixed(1)+'倍</div><div class="pr-p">'+vitem.stake+'元 → <b>'+vitem.payout+'元</b></div></div></div>';
+      }
     }
-    
-    h+='</div>';
-    if(p.max_payout)h+='<div style="display:flex;justify-content:space-between;padding:6px 8px;margin-top:4px;background:#f0fdf4;border-radius:6px;font-size:8px"><span>总投入 <b style="color:#0d482e">'+budget+'元</b></span><span>最高可中 <b style="color:#dc2626">'+p.max_payout+'元</b></span><span>回报率 <b style="color:#0d482e">+'+(p.max_payout/budget*100-100).toFixed(0)+'%</b></span></div>';
+    h=h+'</div>';
+    if(p.max_payout)h=h+'<div style="display:flex;justify-content:space-between;padding:6px 8px;margin-top:4px;background:#f0fdf4;border-radius:6px;font-size:8px"><span>总投入 <b style="color:#0d482e">'+budget+'元</b></span><span>最高可中 <b style="color:#dc2626">'+p.max_payout+'元</b></span><span>回报率 <b style="color:#0d482e">+'+(p.max_payout/budget*100-100).toFixed(0)+'%</b></span></div>';
     el.innerHTML=h;
-  }catch(e){el.innerHTML='<div class="emp">生成失败，请重试</div>'}
+  }).catch(function(e){el.innerHTML='<div class="emp">生成失败，请重试</div>';});
 }
 
 function pickBattle(key,label){
   if(picks[key])return;
   picks[key]=label;myScore+=10;myWins+=1;
-  localStorage.setItem('qiuyi_picks',JSON.stringify(picks));
-  if(myScore==0){myScore=1000;localStorage.setItem('qiuyi_score','1000')}
-updateScore();loadB();
-  const t=document.createElement('div');
+  try{localStorage.setItem('qiuyi_picks',JSON.stringify(picks));}catch(e){}
+  updateScore();loadB();
+  var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0d482e;color:#fff;padding:6px 14px;border-radius:6px;font-size:9px;z-index:999;font-weight:600';
   var luckMsgs=['🧧 把把都赢！','🍀 好运连连！','💯 一顺百顺！','💰 百倍好运！','🎯 十拿九稳！','🌟 顺风顺水！','🔥 鸿运当头！','🏆 旗开得胜！','🎉 中！中！中！','✨ 财运亨通！'];
-t.textContent='✅ +10积分！ '+luckMsgs[Math.floor(Math.random()*luckMsgs.length)];
+  t.textContent='✅ +10积分！ '+luckMsgs[Math.floor(Math.random()*luckMsgs.length)];
   document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2000);
+  setTimeout(function(){t.remove();},2000);
 }
+
 function toggleGlossary(){
-  const bar=document.getElementById('glossaryBar');
+  var bar=document.getElementById('glossaryBar');
   bar.style.display=bar.style.display==='none'?'block':'none';
 }
 if(myScore==0){myScore=1000;localStorage.setItem('qiuyi_score','1000')}
@@ -486,62 +482,51 @@ t.textContent='✅ +10积分！ '+luckMsgs[Math.floor(Math.random()*luckMsgs.len
     }
   }
 });
-// 滚动吉祥话
-// 复盘页面
-async function loadReview(){
+// 复盘页面 (ES5)
+function loadReview(){
   var el=document.getElementById('reviewList');
-  try{
-    var r=await fetch('/api/review');var d=await r.json();
-    if(!d.success){el.innerHTML='<div class="emp">暂无复盘数据</div>';return}
+  fetch('/api/review').then(function(r){return r.json();}).then(function(d){
+    if(!d.success){el.innerHTML='<div class="emp">暂无复盘数据</div>';return;}
     var data=d.data;
     var html='<div class="mc"><div style="font-size:10px;font-weight:700;color:#0d482e;margin-bottom:4px">📈 每日复盘 '+data.date+'</div>';
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">';
-    html+='<div style="background:#f0fdf4;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#0d482e">'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">预测场次</div></div>';
-    html+='<div style="background:#fefce8;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#d4a843">'+data.reviewed+'/'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">已复盘</div></div>';
-    html+='<div style="background:#fce4ec;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#c62828">'+data.pending+'</div><div style="font-size:7px;color:#6b7280">待出结果</div></div>';
-    html+='</div>';
-    
-    // 准确率
+    html=html+'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px">';
+    html=html+'<div style="background:#f0fdf4;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#0d482e">'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">预测场次</div></div>';
+    html=html+'<div style="background:#fefce8;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#d4a843">'+data.reviewed+'/'+data.total_predictions+'</div><div style="font-size:7px;color:#6b7280">已复盘</div></div>';
+    html=html+'<div style="background:#fce4ec;border-radius:6px;padding:5px;text-align:center"><div style="font-size:12px;font-weight:800;color:#c62828">'+data.pending+'</div><div style="font-size:7px;color:#6b7280">待出结果</div></div>';
+    html=html+'</div>';
     var acc=data.accuracy;
-    html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin-bottom:3px">🎯 各玩法准确率</div>';
-    html+='<div style="font-size:7px;color:#6b7280;margin-bottom:4px">*累计数据，将持续更新</div>';
+    html=html+'<div style="font-size:9px;font-weight:600;color:#0d482e;margin-bottom:3px">🎯 各玩法准确率</div>';
+    html=html+'<div style="font-size:7px;color:#6b7280;margin-bottom:4px">*累计数据，将持续更新</div>';
     var items=[{k:'rq_win',l:'让球推荐'},{k:'spf_win',l:'SPF推荐'}];
     for(var ii=0;ii<items.length;ii++){
       var it=items[ii];var a=acc[it.k];
       var rate=a.total>0?a.rate+'%':'暂无数据';
       var barW=a.total>0?Math.min(100,Math.max(2,a.rate)):0;
       var barC=a.rate>60?'#0d482e':a.rate>40?'#d4a843':'#c62828';
-      html+='<div style="display:flex;justify-content:space-between;font-size:8px;padding:3px 0"><span>'+it.l+'</span><span style="font-weight:600;color:'+barC+'">'+rate+' ('+a.correct+'/'+a.total+')</span></div>';
-      if(barW>0)html+='<div style="height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:'+barC+';border-radius:2px"></div></div>';
+      html=html+'<div style="display:flex;justify-content:space-between;font-size:8px;padding:3px 0"><span>'+it.l+'</span><span style="font-weight:600;color:'+barC+'">'+rate+' ('+a.correct+'/'+a.total+')</span></div>';
+      if(barW>0)html=html+'<div style="height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden"><div style="height:100%;width:'+barW+'%;background:'+barC+';border-radius:2px"></div></div>';
     }
-    
-    // 策略参数
     var w=data.strategy_weights;
-    html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">⚙️ 动态策略参数</div>';
-    html+='<div style="font-size:7px;color:#6b7280;line-height:1.8">';
-    html+='EV门槛: <b style="color:#0d482e">'+w.ev_threshold+'</b> | ';
-    html+='胜率门槛: <b style="color:#0d482e">'+w.win_rate_threshold+'%</b><br>';
-    html+='让球权重: <b style="color:#0d482e">'+w.rq_weight+'</b> | ';
-    html+='SPF权重: <b style="color:#0d482e">'+w.spf_weight+'</b> | ';
-    html+='比分权重: <b style="color:#0d482e">'+w.score_weight+'</b>';
-    html+='</div>';
-    
-    // 优化建议
+    html=html+'<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">⚙️ 动态策略参数</div>';
+    html=html+'<div style="font-size:7px;color:#6b7280;line-height:1.8">';
+    html=html+'EV门槛: <b style="color:#0d482e">'+w.ev_threshold+'</b> | ';
+    html=html+'胜率门槛: <b style="color:#0d482e">'+w.win_rate_threshold+'%</b><br>';
+    html=html+'让球权重: <b style="color:#0d482e">'+w.rq_weight+'</b> | ';
+    html=html+'SPF权重: <b style="color:#0d482e">'+w.spf_weight+'</b> | ';
+    html=html+'比分权重: <b style="color:#0d482e">'+w.score_weight+'</b>';
+    html=html+'</div>';
     if(data.suggestions&&data.suggestions.length>0){
-      html+='<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">💡 优化建议</div>';
+      html=html+'<div style="font-size:9px;font-weight:600;color:#0d482e;margin:6px 0 3px">💡 优化建议</div>';
       for(var si=0;si<data.suggestions.length;si++){
-        html+='<div style="font-size:7px;padding:3px 6px;background:#fefce8;border-radius:4px;margin-bottom:2px;color:#92400e">'+data.suggestions[si]+'</div>';
+        html=html+'<div style="font-size:7px;padding:3px 6px;background:#fefce8;border-radius:4px;margin-bottom:2px;color:#92400e">'+data.suggestions[si]+'</div>';
       }
     }
-    
-    // 学习次数
     if(data.params){
-      html+='<div style="font-size:7px;color:#9ca3af;margin-top:6px;text-align:center">已自我优化 '+data.params.learn_count+' 次</div>';
+      html=html+'<div style="font-size:7px;color:#9ca3af;margin-top:6px;text-align:center">已自我优化 '+data.params.learn_count+' 次</div>';
     }
-    
-    html+='</div>';
+    html=html+'</div>';
     el.innerHTML=html;
-  }catch(e){el.innerHTML='<div class="emp">复盘数据加载中</div>'}
+  }).catch(function(e){el.innerHTML='<div class="emp">复盘数据加载中</div>';});
 }
 var footerLucks=['🧧 把把都赢','🍀 好运连连','💯 一顺百顺','💰 百倍好运','🎯 十拿九稳','🌟 顺风顺水','🔥 鸿运当头','🏆 旗开得胜','🎉 中中中','✨ 财运亨通'];
 var headerLucks=['🧧 把把都赢 · 顺风顺水 · 好运连连','🍀 好运自来 · 十拿九稳 · 财源广进','💯 一顺百顺 · 鸿运当头 · 万事如意','💰 百倍好运 · 旗开得胜 · 恭喜发财','🎯 红单连连 · 势如破竹 · 马到成功'];

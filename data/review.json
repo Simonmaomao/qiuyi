@@ -1,379 +1,60 @@
 {
-  "daily": [],
-  "predictions": [
-    {
-      "date": "2026-07-05",
-      "time": "20:57",
-      "matches": [
+    "daily": [
         {
-          "match": "阿根廷vs埃及",
-          "rq_direction": "阿根廷不败",
-          "rq_sp": 1.89,
-          "rq_win_rate": 89.0,
-          "rq_ev": 1.68,
-          "rq_recommended": true,
-          "spf_direction": "阿根廷胜",
-          "spf_sp": 1.23,
-          "spf_win_rate": 69.0,
-          "spf_ev": 0.85,
-          "top_scores": [
-            [
-              "1-0",
-              20.0
-            ],
-            [
-              "2-0",
-              19.8
-            ],
-            [
-              "3-0",
-              13.0
-            ]
-          ]
-        },
-        {
-          "match": "墨西哥vs英格兰",
-          "rq_direction": "墨西哥不败",
-          "rq_sp": 1.6,
-          "rq_win_rate": 60.0,
-          "rq_ev": 0.96,
-          "rq_recommended": true,
-          "spf_direction": "墨西哥胜",
-          "spf_sp": 3.22,
-          "spf_win_rate": 30.0,
-          "spf_ev": 0.97,
-          "top_scores": [
-            [
-              "0-1",
-              13.3
-            ],
-            [
-              "1-1",
-              13.0
-            ],
-            [
-              "0-0",
-              10.1
-            ]
-          ]
-        },
-        {
-          "match": "美国vs比利时",
-          "rq_direction": "美国不败",
-          "rq_sp": 1.42,
-          "rq_win_rate": 63.0,
-          "rq_ev": 0.89,
-          "rq_recommended": true,
-          "spf_direction": "美国胜",
-          "spf_sp": 2.44,
-          "spf_win_rate": 35.0,
-          "spf_ev": 0.85,
-          "top_scores": [
-            [
-              "1-1",
-              13.3
-            ],
-            [
-              "0-1",
-              11.8
-            ],
-            [
-              "1-0",
-              11.4
-            ]
-          ]
-        },
-        {
-          "match": "巴西vs挪威",
-          "rq_direction": "挪威不败",
-          "rq_sp": 2.12,
-          "rq_win_rate": 46.0,
-          "rq_ev": 0.98,
-          "rq_recommended": true,
-          "spf_direction": "挪威胜",
-          "spf_sp": 4.7,
-          "spf_win_rate": 21.0,
-          "spf_ev": 0.99,
-          "top_scores": [
-            [
-              "1-0",
-              16.7
-            ],
-            [
-              "2-0",
-              13.8
-            ],
-            [
-              "1-1",
-              10.7
-            ]
-          ]
-        },
-        {
-          "match": "葡萄牙vs西班牙",
-          "rq_direction": "葡萄牙不败",
-          "rq_sp": 1.82,
-          "rq_win_rate": 50.0,
-          "rq_ev": 0.91,
-          "rq_recommended": true,
-          "spf_direction": "葡萄牙胜",
-          "spf_sp": 3.83,
-          "spf_win_rate": 24.0,
-          "spf_ev": 0.92,
-          "top_scores": [
-            [
-              "0-1",
-              15.7
-            ],
-            [
-              "0-2",
-              12.1
-            ],
-            [
-              "1-1",
-              11.6
-            ]
-          ]
-        },
-        {
-          "match": "瑞士vs哥伦比亚",
-          "rq_direction": "瑞士不败",
-          "rq_sp": 1.46,
-          "rq_win_rate": 56.0,
-          "rq_ev": 0.82,
-          "rq_recommended": false,
-          "spf_direction": "瑞士胜",
-          "spf_sp": 2.91,
-          "spf_win_rate": 27.0,
-          "spf_ev": 0.79,
-          "top_scores": [
-            [
-              "0-1",
-              14.3
-            ],
-            [
-              "1-1",
-              12.6
-            ],
-            [
-              "0-0",
-              10.1
-            ]
-          ]
+            "date": "2026-07-10",
+            "match": "法国vs摩洛哥",
+            "score": "2-0",
+            "stage": "1/4决赛",
+            "review": {
+                "spf_prediction": "法国胜",
+                "spf_result": "法国胜",
+                "spf_hit": true,
+                "spf_sp": 1.40,
+                "rq_prediction": "法国-1胜",
+                "rq_result": "法国-1胜 (净胜2球)",
+                "rq_hit": true,
+                "rq_sp": 2.43,
+                "score_prediction_top3": ["0-0(14.00)", "2-1(7.50)", "1-0(6.00)"],
+                "score_actual": "2-0",
+                "score_hit": false,
+                "score_sp": 6.50,
+                "plan_performance": {
+                    "spf_single_100": 140,
+                    "rq_single_100": 243,
+                    "total_profit": 183,
+                    "roi": "+91.5%"
+                },
+                "learning": {
+                    "spf_accuracy": "1/1 (100%)",
+                    "rq_accuracy": "1/1 (100%)",
+                    "score_accuracy": "0/1",
+                    "note": "法国队强势零封，让球盘轻松穿盘。比分预测偏保守(首选0-0)，实际法国进攻火力被低估。"
+                }
+            }
         }
-      ]
+    ],
+    "predictions": [
+        {
+            "date": "2026-07-09",
+            "time": "22:00",
+            "matches": [
+                {
+                    "match": "法国vs摩洛哥",
+                    "rq_direction": "法国-1胜(2.43)",
+                    "rq_sp": 2.43,
+                    "spf_direction": "法国胜(1.40)",
+                    "spf_sp": 1.40,
+                    "result": "命中"
+                }
+            ]
+        }
+    ],
+    "accuracy": {
+        "spf_win": {"correct": 1, "total": 1, "rate": 100.0},
+        "rq_win": {"correct": 1, "total": 1, "rate": 100.0}
     },
-    {
-      "date": "2026-07-06",
-      "time": "12:54",
-      "matches": [
-        {
-          "match": "阿根廷vs埃及",
-          "rq_direction": "阿根廷不败",
-          "rq_sp": 1.89,
-          "rq_win_rate": 89.0,
-          "rq_ev": 1.68,
-          "rq_recommended": true,
-          "spf_direction": "阿根廷胜",
-          "spf_sp": 1.23,
-          "spf_win_rate": 69.0,
-          "spf_ev": 0.85,
-          "top_scores": [
-            [
-              "1-0",
-              20.0
-            ],
-            [
-              "2-0",
-              19.8
-            ],
-            [
-              "3-0",
-              13.0
-            ]
-          ]
-        },
-        {
-          "match": "墨西哥vs英格兰",
-          "rq_direction": "墨西哥不败",
-          "rq_sp": 1.6,
-          "rq_win_rate": 60.0,
-          "rq_ev": 0.96,
-          "rq_recommended": true,
-          "spf_direction": "墨西哥胜",
-          "spf_sp": 3.22,
-          "spf_win_rate": 30.0,
-          "spf_ev": 0.97,
-          "top_scores": [
-            [
-              "0-1",
-              13.3
-            ],
-            [
-              "1-1",
-              13.0
-            ],
-            [
-              "0-0",
-              10.1
-            ]
-          ]
-        },
-        {
-          "match": "美国vs比利时",
-          "rq_direction": "美国不败",
-          "rq_sp": 1.42,
-          "rq_win_rate": 63.0,
-          "rq_ev": 0.89,
-          "rq_recommended": true,
-          "spf_direction": "美国胜",
-          "spf_sp": 2.44,
-          "spf_win_rate": 35.0,
-          "spf_ev": 0.85,
-          "top_scores": [
-            [
-              "1-1",
-              13.3
-            ],
-            [
-              "0-1",
-              11.8
-            ],
-            [
-              "1-0",
-              11.4
-            ]
-          ]
-        },
-        {
-          "match": "巴西vs挪威",
-          "rq_direction": "挪威不败",
-          "rq_sp": 2.12,
-          "rq_win_rate": 46.0,
-          "rq_ev": 0.98,
-          "rq_recommended": true,
-          "spf_direction": "挪威胜",
-          "spf_sp": 4.7,
-          "spf_win_rate": 21.0,
-          "spf_ev": 0.99,
-          "top_scores": [
-            [
-              "1-0",
-              16.7
-            ],
-            [
-              "2-0",
-              13.8
-            ],
-            [
-              "1-1",
-              10.7
-            ]
-          ]
-        },
-        {
-          "match": "葡萄牙vs西班牙",
-          "rq_direction": "葡萄牙不败",
-          "rq_sp": 1.82,
-          "rq_win_rate": 50.0,
-          "rq_ev": 0.91,
-          "rq_recommended": true,
-          "spf_direction": "葡萄牙胜",
-          "spf_sp": 3.83,
-          "spf_win_rate": 24.0,
-          "spf_ev": 0.92,
-          "top_scores": [
-            [
-              "0-1",
-              15.7
-            ],
-            [
-              "0-2",
-              12.1
-            ],
-            [
-              "1-1",
-              11.6
-            ]
-          ]
-        },
-        {
-          "match": "瑞士vs哥伦比亚",
-          "rq_direction": "瑞士不败",
-          "rq_sp": 1.46,
-          "rq_win_rate": 56.0,
-          "rq_ev": 0.82,
-          "rq_recommended": false,
-          "spf_direction": "瑞士胜",
-          "spf_sp": 2.91,
-          "spf_win_rate": 27.0,
-          "spf_ev": 0.79,
-          "top_scores": [
-            [
-              "0-1",
-              14.3
-            ],
-            [
-              "1-1",
-              12.6
-            ],
-            [
-              "0-0",
-              10.1
-            ]
-          ]
-        }
-      ]
-    },
-    {
-      "date": "2026-07-05",
-      "time": "赛后复盘",
-      "matches": [
-        {
-          "match": "巴西vs挪威",
-          "prediction": "挪威不败(让球负)",
-          "actual": "挪威不败",
-          "correct": true,
-          "lesson": "市场高估巴西进攻效率, 淘汰赛防守优先, 强队让球需谨慎"
-        },
-        {
-          "match": "墨西哥vs英格兰",
-          "prediction": "墨西哥不败(让球胜)",
-          "actual": "墨西哥让球平",
-          "correct": true,
-          "lesson": "受让方平局概率被低估, 让球平选项含金量高"
-        }
-      ]
+    "strategy_weights": {
+        "ev_threshold": 0.68,
+        "min_win_rate": 10
     }
-  ],
-  "accuracy": {
-    "rq_win": {
-      "correct": 2,
-      "total": 2,
-      "rate": 100.0
-    },
-    "spf_win": {
-      "correct": 0,
-      "total": 0,
-      "rate": 0
-    },
-    "score_exact": {
-      "correct": 0,
-      "total": 0,
-      "rate": 0
-    },
-    "score_direction": {
-      "correct": 0,
-      "total": 0,
-      "rate": 0
-    }
-  },
-  "strategy_weights": {
-    "ev_threshold": 0.85,
-    "win_rate_threshold": 40,
-    "score_ev_threshold": 0.7,
-    "rq_weight": 1.0,
-    "spf_weight": 0.6,
-    "score_weight": 0.3
-  }
 }
